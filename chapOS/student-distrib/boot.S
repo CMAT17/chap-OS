@@ -24,6 +24,7 @@ _start:
 	jmp     continue
 
 continue:
+	# Modify here
 	# Load the GDT by changing GDTR
 	lgdt	gdt_desc 
 	# Load CS with the new descriptor value
