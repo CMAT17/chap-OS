@@ -162,11 +162,15 @@ entry (unsigned long magic, unsigned long addr)
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
 	 * without showing you any output */
-	//printf("Enabling Interrupts\n");
-	//sti();
-
-
-  	initialize_paging();
+	printf("Enabling Interrupts\n");
+	sti();
+	//int a = 3/0;
+	/*
+	int *a;
+	a = NULL;
+	int c = *a;
+	*/
+  	//initialize_paging();
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */
