@@ -1,10 +1,18 @@
 #include "x86_desc.h"
 #include "idt.h"
-#include "handlers.h"
+#include "a"
 
-#define MASTER_PIC  0x20
-#define KEYBOARD    0x21
+#define MASTER_PIC        0x20
+#define KEYBOARD          0x21
+#define RTC               0x28
 #define SYSCALL_ENTRY     0x80
+
+#define EXCEPT_FN(exception_name, msg)  \
+static void exception_name()            \
+{                                       \
+    printf("%s\n", msg);                \
+    while(1);                           \
+}                                       \
 
 EXCEPT_FN(exception_DE,"Divide by Zero Error");
 EXCEPT_FN(exception_DB,"Debug");
@@ -28,6 +36,10 @@ EXCEPT_FN(exception_XM, "SIMD Floating-Point Exception");
 EXCEPT_FN(exception_VE, "Virtualization Exception");
 EXCEPT_FN(exception_SX, "Security Exception");
 EXCEPT_FN(exception_TF, "Triple Fault");
+
+static void generic_handler(){
+    printf("Interrupt unkown. pls halp \n");
+}
 
 void init_idt()
 {
@@ -70,13 +82,14 @@ void init_idt()
     syscall.dpl = 3;
 
     // Set Present bit
-    interrupt.present = 0x0;
+    interrupt.present = 0x1;
     exception.present = 0x1;
     syscall.present = 0x1;
 
     // Seg Selector
     interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
 
+    // set the Offsets for each exception
     SET_IDT_ENTRY(idt[0], exception_DE);
     SET_IDT_ENTRY(idt[1], exception_DB);
     SET_IDT_ENTRY(idt[2], exception_NMI);
@@ -111,9 +124,19 @@ void init_idt()
             if(i == SYSCALL_ENTRY)
             {
                 idt[i] = syscall;
+                SET_IDT_ENTRY(idt[i], syscall_handler);
             }
+            SET_IDT_ENTRY(idt[i], generic_handler);
         }
     }
+    //Enable Keyboard Interrupts
+   // SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
 
-    lidt(idt_desc_ptr);
+    //Enable RTC Interrupts
+   // SET_IDT_ENTRY(idt[RTC], rtc_handler);
+
+    //Enable PIC Interrupts
+   // SET_IDT_ENTRY(idt[MASTER_PIC], pic_handler);
+
+   // lidt(idt_desc_ptr);
 }
