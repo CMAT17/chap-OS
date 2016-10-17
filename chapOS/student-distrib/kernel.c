@@ -170,7 +170,14 @@ entry (unsigned long magic, unsigned long addr)
 	printf("%d", a);
 
 	
-  	initialize_paging();
+  initialize_paging();
+  
+  int* test;
+  test = (int*)(0x200000);
+  int test2 = test[0];
+  
+  printf("%i", test2);
+  
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */
