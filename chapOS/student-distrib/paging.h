@@ -11,6 +11,7 @@
 #ifndef VIDEO
 #define VIDEO 0xB8000
 #endif
+#define HI_VIDEO 0xB8
 
 //Initialize paging parameters and registers
 void initialize_paging(void);

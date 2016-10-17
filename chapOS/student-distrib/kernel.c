@@ -164,12 +164,7 @@ entry (unsigned long magic, unsigned long addr)
 	 * without showing you any output */
 	printf("Enabling Interrupts\n");
 	sti();
-	
-	int a = 0xFFFFFFFF;
-	a = a + 100;
-	printf("%d", a);
 
-	
   	initialize_paging();
 	/* Execute the first program (`shell') ... */
 
