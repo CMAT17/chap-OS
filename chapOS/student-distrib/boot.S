@@ -5,6 +5,7 @@
 
 #include "multiboot.h"
 #include "x86_desc.h"
+#include "idt.h"
 
 .text
 
@@ -26,6 +27,18 @@ _start:
 continue:
 	# Load the GDT by changing GDTR
 	lgdt	gdt_desc 
+
+	# Load and initialize IDT
+	pushl 	%eax
+	pushl 	%ecx
+	pushl 	%edx
+
+	call 	init_idt
+
+	popl 	%edx
+	popl 	%ecx
+	popl 	%eax
+
 	# Load CS with the new descriptor value
 	ljmp    $KERNEL_CS, $keep_going
 
