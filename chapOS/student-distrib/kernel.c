@@ -10,10 +10,7 @@
 #include "rtc.h"
 #include "keyboard.h"
 #include "paging.h"
-<<<<<<< HEAD
 #include "types.h"
-=======
->>>>>>> bea252f35ca295f415d7755402db85356b570053
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
