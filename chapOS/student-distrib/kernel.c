@@ -8,11 +8,8 @@
 #include "i8259.h"
 #include "debug.h"
 #include "rtc.h"
-<<<<<<< HEAD
 #include "keyboard.h"
-=======
 #include "paging.h"
->>>>>>> 2c74033eab75ddb81e60c28b05148425cd268d73
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -151,30 +148,30 @@ entry (unsigned long magic, unsigned long addr)
 	}
 
 	/* Init the PIC */
-	i8259_init();
+	//i8259_init();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 	// Init the RTC
-	rtc_init();
+	//rtc_init();
 
 	//initialize the keyboard
-	initialize_keyboard();
+	//initialize_keyboard();
 	/* Enable interrupts */
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
 	 * without showing you any output */
-	printf("Enabling Interrupts\n");
-	sti();
+	//printf("Enabling Interrupts\n");
+	//sti();
 
 
   initialize_paging();
 	/* Execute the first program (`shell') ... */
-	int a = 3/0;
+	/*int a = 3/0;
 
 	int * ptr;
 	ptr = NULL;
-	int deref_NULL = *ptr;
+	int deref_NULL = *ptr;*/
 
 
 	/* Spin (nicely, so we don't chew up cycles) */
