@@ -1,0 +1,119 @@
+#include "x86_desc.h"
+#include "idt.h"
+#include "handlers.h"
+
+#define MASTER_PIC  0x20
+#define KEYBOARD    0x21
+#define SYSCALL_ENTRY     0x80
+
+EXCEPT_FN(exception_DE,"Divide by Zero Error");
+EXCEPT_FN(exception_DB,"Debug");
+EXCEPT_FN(exception_NMI, "Non-maskable Interrupt");
+EXCEPT_FN(exception_BP, "Breakpoint");
+EXCEPT_FN(exception_OF, "Overflow");
+EXCEPT_FN(exception_BR, "Beyond Range Exceeded");
+EXCEPT_FN(exception_UD, "Invalid Opcode");
+EXCEPT_FN(exception_NM, "Device Not Available");
+EXCEPT_FN(exception_DF, "Double Fault");
+EXCEPT_FN(exception_CO, "Coprocessor Segment Overrun");
+EXCEPT_FN(exception_TS, "Invalid TSS");
+EXCEPT_FN(exception_NP, "segment Not Present");
+EXCEPT_FN(exception_SS, "Stack Segment Fault");
+EXCEPT_FN(exception_GP, "General Protection Fault");
+EXCEPT_FN(exception_PF, "Page Fault");
+EXCEPT_FN(exception_MF, "x87 Floating Point Exception");
+EXCEPT_FN(exception_AC, "Alignment Check");
+EXCEPT_FN(exception_MC, "Machine Check");
+EXCEPT_FN(exception_XM, "SIMD Floating-Point Exception");
+EXCEPT_FN(exception_VE, "Virtualization Exception");
+EXCEPT_FN(exception_SX, "Security Exception");
+EXCEPT_FN(exception_TF, "Triple Fault");
+
+void init_idt()
+{
+    int i; 
+
+    idt_desc_t interrupt;
+    idt_desc_t syscall;
+    idt_desc_t exception;
+
+    // least significant 8 bits are all 0
+    interrupt.reserved4 = 0x0;
+    exception.reserved4 = 0x0;
+    syscall.reserved4 = 0x0;
+
+    // Next LSB determines whether its a trap gate or an interrupt gate
+    interrupt.reserved3 = 0x0;
+    exception.reserved3 = 0x1;
+    syscall.reserved3 = 0x1;
+
+    interrupt.reserved2 = 0x1;
+    exception.reserved2 = 0x1;
+    syscall.reserved2 = 0x1;
+
+    interrupt.reserved1 = 0x1;
+    exception.reserved1 = 0x1;
+    syscall.reserved1 = 0x1;
+
+    interrupt.reserved0 = 0x1;
+    exception.reserved0 = 0x1;
+    syscall.reserved0 = 0x1;
+
+    //must be set to zero for interrupt gate
+    interrupt.size = 0x0;
+    exception.size = 0x0;
+    syscall.size = 0x0;
+
+    // Set DP Level
+    interrupt.dpl = 0;
+    exception.dpl = 0;
+    syscall.dpl = 3;
+
+    // Set Present bit
+    interrupt.present = 0x0;
+    exception.present = 0x1;
+    syscall.present = 0x1;
+
+    // Seg Selector
+    interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
+
+    SET_IDT_ENTRY(idt[0], exception_DE);
+    SET_IDT_ENTRY(idt[1], exception_DB);
+    SET_IDT_ENTRY(idt[2], exception_NMI);
+    SET_IDT_ENTRY(idt[3], exception_BP);
+    SET_IDT_ENTRY(idt[4], exception_OF);
+    SET_IDT_ENTRY(idt[5], exception_BR);
+    SET_IDT_ENTRY(idt[6], exception_UD);
+    SET_IDT_ENTRY(idt[7], exception_NM);
+    SET_IDT_ENTRY(idt[8], exception_DF);
+    SET_IDT_ENTRY(idt[9], exception_CO);
+    SET_IDT_ENTRY(idt[10], exception_TS);
+    SET_IDT_ENTRY(idt[11], exception_NP);
+    SET_IDT_ENTRY(idt[12], exception_SS);
+    SET_IDT_ENTRY(idt[13], exception_GP);
+    SET_IDT_ENTRY(idt[14], exception_PF);
+    SET_IDT_ENTRY(idt[16], exception_MF);
+    SET_IDT_ENTRY(idt[17], exception_AC);
+    SET_IDT_ENTRY(idt[18], exception_MC);
+    SET_IDT_ENTRY(idt[19], exception_XM);
+    SET_IDT_ENTRY(idt[20], exception_VE);
+    SET_IDT_ENTRY(idt[30], exception_SX);
+
+    for(i = 0; i<NUM_VEC; i++)
+    {
+        if(i<MASTER_PIC){
+            idt[i] = exception;
+        }
+        else{
+
+            idt[i] = interrupt;
+            
+            if(i == SYSCALL_ENTRY)
+            {
+                idt[i] = syscall;
+            }
+        }
+    }
+
+    lidt(idt_desc_ptr);
+}
