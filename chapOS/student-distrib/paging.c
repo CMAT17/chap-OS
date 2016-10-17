@@ -40,14 +40,14 @@ void initialize_paging(void){
   page_dir[1] += 0x400000; //This Starts at 4MB (kernel)
   
   //Set cr3(PDBR) to point to PD, enable paging, Page size extension
-  asm("movl %0, %%eax          ;"
-      "movl %%eax, %%cr3       ;"
-      "movl %%cr0, %%eax       ;"
-      "orl  $0x80000000, %%eax ;"
-      "movl %%eax, %%cr0       ;"
-      "movl %%cr4, %%eax       ;"
-      "orl  $0x00000010, %%eax ;"
-      "movl %%eax, %%cr4       ;"
+  asm("movl %0, %%eax          \n"
+      "movl %%eax, %%cr3       \n"
+      "movl %%cr0, %%eax       \n"
+      "orl  $0x80000000, %%eax \n"
+      "movl %%eax, %%cr0       \n"
+      "movl %%cr4, %%eax       \n"
+      "orl  $0x00000010, %%eax \n"
+      "movl %%eax, %%cr4       \n"
       :                        // no output
       :"r"(page_dir)           // page_dir as the input
       :"%eax","cc"             // clobbered register
