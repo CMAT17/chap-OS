@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "rtc.h"
+#include "paging.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -161,7 +162,7 @@ entry (unsigned long magic, unsigned long addr)
 	 * without showing you any output */
 	/*printf("Enabling Interrupts\n");
 	sti();*/
-
+  initialize_paging();
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */

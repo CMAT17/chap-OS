@@ -27,12 +27,32 @@ void initialize_paging(void){
     page_dir[i] = 2;
     page_table[i] = page_table[i-1]*PAGE_ALIGN;
   }
-  for(i=1;i<PAGE_DIRECTORY_SIZE;i++)
+  
+  //Set the R/W of the page table to be 1
+  for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     page_table[i] = page_table[i] | 2; //Enable R/W for page table
+  }
+  
+  page_table[(VIDEO>>12)]++;       //Set the video memory page table to be present
   
   //Set the second entry of the page directory to be 4MB for the kernel
   page_dir[1] = 0x83;      //10000011 enable RW, present, and set it to be 4MB
   page_dir[1] += 0x400000; //This Starts at 4MB (kernel)
   
+  //Set cr3(PDBR) to point to PD, enable paging, Page size extension
+  asm volatile("movl %0, %%eax          ;"
+               "movl %%eax, %%cr3       ;"
+               "movl %%cr0, %%eax       ;"
+               "orl  $0x80000000, %%eax ;"
+               "movl %%eax, %%cr0       ;"
+               "movl %%cr4, %%eax       ;"
+               "orl  $0x00000010, %%eax ;"
+               "movl %%eax, %%cr4       ;"
+               :                        // no output
+               :"r"(page_dir)           // page_dir as the input
+               :"%eax"                  // clobbered register
+  );
   return;
 }
+
+
