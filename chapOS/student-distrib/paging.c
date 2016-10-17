@@ -1,7 +1,38 @@
 #include "paging.h"
-#include "x86_desc.h"
 
+//The page directory
+/* This is a Page-Directory Entry (4-KByte Page Table) */
+//See page 90 IA32-ref-manual-vol3 for more info
+//+31------------------12+11----9+-8-+-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+//| Page-Table Base Addr | Avail | G | PS| 0 | A |PCD|PWT|U/S|R/W| P |
+//+----------------------+-------+---+---+---+---+---+---+---+---+---+
+uint32_t page_dir[PAGE_DIRECTORY_SIZE] __attribute__((aligned(PAGE_ALIGN)));
+
+//The page table stores its entries
+uint32_t page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
+
+//initialize_paging function
+//This function initialize the page directory and page table.
+//The first 4MB will be using 4KB paging with the first page directory. 
+//Input: none
+//Return: none
 void initialize_paging(void){
+  int i;  //Iterator
+  
+  //Initialize the first page directory to point to the first page table
+  page_dir[0] = (page_table&&0xFFFFF000)+3;
+  page_table[0] = 0;
+  for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
+    //This will clear all bits as shown above, but wants to turn on R/W bit
+    page_dir[i] = 2;
+    page_table[i] = page_table[i-1]*PAGE_ALIGN;
+  }
+  for(i=1;i<PAGE_DIRECTORY_SIZE;i++)
+    page_table[i] = page_table[i] | 2; //Enable R/W for page table
+  
+  //Set the second entry of the page directory to be 4MB for the kernel
+  page_dir[1] = 0x83;      //10000011 enable RW, present, and set it to be 4MB
+  page_dir[1] += 0x400000; //This Starts at 4MB (kernel)
   
   return;
 }
