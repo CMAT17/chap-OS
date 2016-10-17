@@ -34,6 +34,7 @@ void initialize_paging(void){
   }
   
   page_table[HI_VIDEO] |= 3;//1;     //Set the video memory page table to be present
+
   
   //Set the second entry of the page directory to be 4MB for the kernel
   page_dir[1] = 0x83;      //10000011 enable RW, present, and set it to be 4MB

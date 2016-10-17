@@ -165,11 +165,6 @@ entry (unsigned long magic, unsigned long addr)
 	printf("Enabling Interrupts\n");
 	sti();
 	
-	int a = 0xFFFFFFFF;
-	a = a + 100;
-	printf("%d", a);
-
-	
   initialize_paging();
   
   int* test;
