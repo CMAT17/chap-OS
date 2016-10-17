@@ -84,11 +84,12 @@ ldt_desc_ptr:
 
 gdt_bottom:
 
-	.align 16
-
 gdt_desc:
+	# Modify here
 	.word gdt_bottom - gdt - 1  # size of table
 	.long gdt  					# base address
+
+	.align 16
 ldt:
 	.rept 4
 	.quad 0
