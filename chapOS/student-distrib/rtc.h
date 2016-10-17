@@ -1,6 +1,7 @@
 #ifndef _RTC_H_
 #define _RTC_H_
 
+#include "types.h"
 //port info
 #define RTC_PORT    0x70
 #define RTC_CMOS    0x71
@@ -23,5 +24,8 @@
 
 //IRQ port number
 #define RTC_IRQ         0x08
+
+void rtc_init();
+void rtc_irq_handler();
 
 #endif

@@ -106,9 +106,9 @@ keyboard_int_handler(){
 		case CAPS_DOWN:
 			press_caps();
 			break;
-		case ENTER:
+		/*case ENTER:
 			press_enter();
-			break;		
+			break;	*/	
 		case LEFT_SHIFT_DOWN:
 			press_shift();
 			break;
@@ -121,9 +121,9 @@ keyboard_int_handler(){
 		case RIGHT_SHIFT_UP:
 			unpress_shift();
 			break;
-		case BKSP:
+		/*case BKSP:
 			press_bskp();
-			break;	
+			break;*/	
 		default:
 			press_other_key(key);
 			break;
@@ -132,7 +132,7 @@ keyboard_int_handler(){
 	//send end of interrupt	
 	send_eoi(KEYBOARD_IRQ);
 	
-	enable_irq();
+	enable_irq(KEYBOARD_IRQ);
 }
 
 /*
@@ -156,9 +156,10 @@ press_caps(){
 }
 
 //To be done later
+/*
 void
 press_enter(){
-}
+}*/
 
 /*
 * void press_shift(){
@@ -195,9 +196,9 @@ unpress_shift(){
 }
 
 //To be done later
-void
+/*void
 press_bskp(){
-}
+}*/
 
 /*
 * void press_other_key(uint8_t key){
@@ -218,7 +219,7 @@ press_other_key(uint8_t key){
 	//Get the key that is being map to scancode_array
 	actual_key = scancode_array[keyboard_mode][key];
 
-	if((buffer_index < buffer_key)
+	if((buffer_index < buffer_key))
 	{	
 		if(actual_key != KEY_NULL)
 		{	

@@ -1,8 +1,12 @@
 #include "x86_desc.h"
 #include "idt.h"
-#include "a"
+#include "handler.h"
+#include "rtc.h"
+#include "keyboard.h"
+#include "lib.h"
 
 #define MASTER_PIC        0x20
+#define EXCEPTION_NUM     32
 #define KEYBOARD          0x21
 #define RTC               0x28
 #define SYSCALL_ENTRY     0x80
@@ -13,6 +17,8 @@ static void exception_name()            \
     printf("%s\n", msg);                \
     while(1);                           \
 }                                       \
+
+static void generic_handler();
 
 EXCEPT_FN(exception_DE,"Divide by Zero Error");
 EXCEPT_FN(exception_DB,"Debug");
@@ -35,10 +41,14 @@ EXCEPT_FN(exception_MC, "Machine Check");
 EXCEPT_FN(exception_XM, "SIMD Floating-Point Exception");
 EXCEPT_FN(exception_VE, "Virtualization Exception");
 EXCEPT_FN(exception_SX, "Security Exception");
-EXCEPT_FN(exception_TF, "Triple Fault");
+//EXCEPT_FN(exception_TF, "Triple Fault");
+
+void div_zero_exc(){
+    printf("divide by zero error\n");
+}
 
 static void generic_handler(){
-    printf("Interrupt unkown. pls halp \n");
+    printf("Interrupt/syscall unkown. pls halp \n");
 }
 
 void init_idt()
@@ -48,6 +58,8 @@ void init_idt()
     idt_desc_t interrupt;
     idt_desc_t syscall;
     idt_desc_t exception;
+
+    lidt(idt_desc_ptr);
 
     // least significant 8 bits are all 0
     interrupt.reserved4 = 0x0;
@@ -67,14 +79,14 @@ void init_idt()
     exception.reserved1 = 0x1;
     syscall.reserved1 = 0x1;
 
-    interrupt.reserved0 = 0x1;
-    exception.reserved0 = 0x1;
-    syscall.reserved0 = 0x1;
+    interrupt.reserved0 = 0x0;
+    exception.reserved0 = 0x0;
+    syscall.reserved0 = 0x0;
 
     //must be set to zero for interrupt gate
-    interrupt.size = 0x0;
-    exception.size = 0x0;
-    syscall.size = 0x0;
+    interrupt.size = 0x1;
+    exception.size = 0x1;
+    syscall.size = 0x1;
 
     // Set DP Level
     interrupt.dpl = 0;
@@ -90,7 +102,7 @@ void init_idt()
     interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
 
     // set the Offsets for each exception
-    SET_IDT_ENTRY(idt[0], exception_DE);
+    SET_IDT_ENTRY(idt[0], div_zero_exc);
     SET_IDT_ENTRY(idt[1], exception_DB);
     SET_IDT_ENTRY(idt[2], exception_NMI);
     SET_IDT_ENTRY(idt[3], exception_BP);
@@ -114,7 +126,7 @@ void init_idt()
 
     for(i = 0; i<NUM_VEC; i++)
     {
-        if(i<MASTER_PIC){
+        if(i<EXCEPTION_NUM){
             idt[i] = exception;
         }
         else{
@@ -124,19 +136,16 @@ void init_idt()
             if(i == SYSCALL_ENTRY)
             {
                 idt[i] = syscall;
-                SET_IDT_ENTRY(idt[i], syscall_handler);
+                SET_IDT_ENTRY(idt[i], generic_handler);
             }
             SET_IDT_ENTRY(idt[i], generic_handler);
         }
     }
-    //Enable Keyboard Interrupts
-   // SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
+    //Set the keyboard handler offsets
+    SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
 
     //Enable RTC Interrupts
-   // SET_IDT_ENTRY(idt[RTC], rtc_handler);
+    SET_IDT_ENTRY(idt[RTC], rtc_handler);
 
-    //Enable PIC Interrupts
-   // SET_IDT_ENTRY(idt[MASTER_PIC], pic_handler);
-
-   // lidt(idt_desc_ptr);
+    
 }

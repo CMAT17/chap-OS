@@ -24,7 +24,7 @@
 #define	PRESS_SHIFT_ONLY	1
 #define	PRESS_CAP_ONLY		2
 #define	PRESS_SHIFT_CAP		3
-#define	NULL_KEY			'\0'
+#define	KEY_NULL    		'\0'
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
 void initialize_keyboard();

@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "rtc.h"
+#include "keyboard.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -154,15 +155,21 @@ entry (unsigned long magic, unsigned long addr)
 	rtc_init();
 
 	//initialize the keyboard
-	keyboard_init();
+	initialize_keyboard();
 	/* Enable interrupts */
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
 	 * without showing you any output */
-	/*printf("Enabling Interrupts\n");
-	sti();*/
+	printf("Enabling Interrupts\n");
+	sti();
 
 	/* Execute the first program (`shell') ... */
+	int a = 3/0;
+
+	int * ptr;
+	ptr = NULL;
+	int deref_NULL = *ptr;
+
 
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile(".1: hlt; jmp .1;");

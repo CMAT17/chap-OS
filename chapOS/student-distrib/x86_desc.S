@@ -9,8 +9,9 @@
 .globl  ldt_size, tss_size
 .globl  gdt_desc, ldt_desc, tss_desc
 .globl  tss, tss_desc_ptr, ldt, ldt_desc_ptr
-.globl  gdt_ptr
+.globl  gdt_desc_ptr, gdt_ptr
 .globl  idt_desc_ptr, idt
+.globl  initial_space_pde, kernel_page_pde, page_table, remaining_pdes
 
 .align 4
 
@@ -84,12 +85,14 @@ ldt_desc_ptr:
 
 gdt_bottom:
 
-gdt_desc:
-	# Modify here
-	.word gdt_bottom - gdt - 1  # size of table
-	.long gdt  					# base address
-
 	.align 16
+
+gdt_desc:
+	.word gdt_bottom - gdt - 1
+	.long gdt
+	
+
+	.align  16
 ldt:
 	.rept 4
 	.quad 0
@@ -97,6 +100,7 @@ ldt:
 ldt_bottom:
 
 .align 4
+
 	.word 0 # Padding
 idt_desc_ptr:
 	.word idt_bottom - idt - 1
