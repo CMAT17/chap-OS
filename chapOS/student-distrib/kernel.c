@@ -8,11 +8,9 @@
 #include "i8259.h"
 #include "debug.h"
 #include "rtc.h"
-<<<<<<< HEAD
 #include "keyboard.h"
-=======
 #include "paging.h"
->>>>>>> 2c74033eab75ddb81e60c28b05148425cd268d73
+#include "types.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -168,15 +166,14 @@ entry (unsigned long magic, unsigned long addr)
 	sti();
 
 
-  initialize_paging();
+  	//initialize_paging();
 	/* Execute the first program (`shell') ... */
-	int a = 3/0;
-
-	int * ptr;
-	ptr = NULL;
-	int deref_NULL = *ptr;
-
-
+	//int a = 3/0;
+	/*int *pi;
+	pi = NULL;
+	int c = *pi;
+	*/
+	uint8_t a = 0xFFFF;
 	/* Spin (nicely, so we don't chew up cycles) */
 	asm volatile(".1: hlt; jmp .1;");
 }

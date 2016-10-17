@@ -1,7 +1,7 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#include "type.h"
+#include "types.h"
 #include "x86_desc.h"
 
 #define PAGE_DIRECTORY_SIZE 1024

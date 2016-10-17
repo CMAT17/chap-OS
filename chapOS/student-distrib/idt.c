@@ -43,9 +43,6 @@ EXCEPT_FN(exception_VE, "Virtualization Exception");
 EXCEPT_FN(exception_SX, "Security Exception");
 //EXCEPT_FN(exception_TF, "Triple Fault");
 
-void div_zero_exc(){
-    printf("divide by zero error\n");
-}
 
 static void generic_handler(){
     printf("Interrupt/syscall unkown. pls halp \n");
@@ -102,7 +99,25 @@ void init_idt()
     interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
 
     // set the Offsets for each exception
-    SET_IDT_ENTRY(idt[0], div_zero_exc);
+    
+
+    for(i = 0; i<NUM_VEC; i++)
+    {
+        if(i<EXCEPTION_NUM){
+            idt[i] = exception;
+        }
+        else{
+
+            idt[i] = interrupt;
+            
+            if(i == SYSCALL_ENTRY)
+            {
+                idt[i] = syscall;
+            }
+            //SET_IDT_ENTRY(idt[i], generic_handler);
+        }
+    }
+    SET_IDT_ENTRY(idt[0], exception_DE);
     SET_IDT_ENTRY(idt[1], exception_DB);
     SET_IDT_ENTRY(idt[2], exception_NMI);
     SET_IDT_ENTRY(idt[3], exception_BP);
@@ -124,23 +139,6 @@ void init_idt()
     SET_IDT_ENTRY(idt[20], exception_VE);
     SET_IDT_ENTRY(idt[30], exception_SX);
 
-    for(i = 0; i<NUM_VEC; i++)
-    {
-        if(i<EXCEPTION_NUM){
-            idt[i] = exception;
-        }
-        else{
-
-            idt[i] = interrupt;
-            
-            if(i == SYSCALL_ENTRY)
-            {
-                idt[i] = syscall;
-                SET_IDT_ENTRY(idt[i], generic_handler);
-            }
-            SET_IDT_ENTRY(idt[i], generic_handler);
-        }
-    }
     //Set the keyboard handler offsets
     SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
 
