@@ -166,13 +166,21 @@ entry (unsigned long magic, unsigned long addr)
 	sti();
 	
   initialize_paging();
-  
+  //testing page faults
+  /*
   int* test;
   test = (int*)(0x200000);
   int test2 = test[0];
   
   printf("%i", test2);
-  
+  */
+  //testing div by 0
+  //int a = 3/0;
+
+  //testing GP
+  int *a = NULL;
+  int b = *a;
+
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */

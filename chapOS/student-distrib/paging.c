@@ -20,7 +20,7 @@ void initialize_paging(void){
   int i;  //Iterator
   
   //Initialize the first page directory to point to the first page table
-  page_dir[0] = (page_table&&0xFFFFF000)|3;
+  page_dir[0] = (((unsigned int)page_table) & 0xFFFFF000)|3;
   page_table[0] = 0;
   for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     //This will clear all bits as shown above, but wants to turn on R/W bit
@@ -37,8 +37,8 @@ void initialize_paging(void){
 
   
   //Set the second entry of the page directory to be 4MB for the kernel
-  page_dir[1] = 0x83;      //10000011 enable RW, present, and set it to be 4MB
-  page_dir[1] |= 0x400000; //This Starts at 4MB (kernel)
+ // page_dir[1] = 0x83;      //10000011 enable RW, present, and set it to be 4MB
+  page_dir[1] |= 0x400083; //This Starts at 4MB (kernel)
   
   //Set cr3(PDBR) to point to PD, enable paging, Page size extension
   asm("movl %0, %%eax          \n"
