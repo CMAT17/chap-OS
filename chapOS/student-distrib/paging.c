@@ -20,7 +20,7 @@ void initialize_paging(void){
   int i;  //Iterator
   
   //Initialize the first page directory to point to the first page table
-  page_dir[0] = ((unsigned int)page_table & HI_PTE_MASK)|PD_ENABLE_ENTRY;
+  page_dir[0] = ((uint32_t)page_table & HI_PTE_MASK)|PD_ENABLE_ENTRY;
   page_table[0] = 0;  //Clear the first page_table entry to be 0
   
   //Initialize page directory entries and page table entries before setting their values
