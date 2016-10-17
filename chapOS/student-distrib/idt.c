@@ -94,7 +94,7 @@ void init_idt()
     interrupt.present = 0x1;
     exception.present = 0x1;
     syscall.present = 0x1;
-
+    
     // Seg Selector
     interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
 
@@ -105,16 +105,40 @@ void init_idt()
     {
         if(i<EXCEPTION_NUM){
             idt[i] = exception;
+            /*idt[i].reserved4 = 0x0;
+            idt[i].reserved3 = 0x1;
+            idt[i].reserved2 = 0x1;
+            idt[i].reserved1 = 0x1;
+            idt[i].size = 0x1;
+            idt[i].reserved0 = 0x0;
+            idt[i].dpl = 0;
+            idt[i].present = 0x1;*/
         }
         else{
 
             idt[i] = interrupt;
-            
+            /*idt[i].reserved4 = 0x0;
+            idt[i].reserved3 = 0x0;
+            idt[i].reserved2 = 0x1;
+            idt[i].reserved1 = 0x1;
+            idt[i].size = 0x1;
+            idt[i].reserved0 = 0x0;
+            idt[i].dpl = 0;
+            idt[i].present = 0x1;
+    */
             if(i == SYSCALL_ENTRY)
             {
                 idt[i] = syscall;
+                /*idt[i].reserved4 = 0x0;
+                idt[i].reserved3 = 0x1;
+                idt[i].reserved2 = 0x1;
+                idt[i].reserved1 = 0x1;
+                idt[i].size = 0x1;
+                idt[i].reserved0 = 0x0;
+                idt[i].dpl = 3;
+                idt[i].present = 0x1; */
             }
-            //SET_IDT_ENTRY(idt[i], generic_handler);
+            SET_IDT_ENTRY(idt[i], generic_handler);
         }
     }
     SET_IDT_ENTRY(idt[0], exception_DE);
