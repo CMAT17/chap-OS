@@ -138,8 +138,11 @@ void init_idt()
                 idt[i].dpl = 3;
                 idt[i].present = 0x1; */
             }
-            SET_IDT_ENTRY(idt[i], generic_handler);
         }
+    }
+    for(i = 32; i<NUM_VEC; i++)
+    {
+        SET_IDT_ENTRY(idt[i], generic_handler);
     }
     SET_IDT_ENTRY(idt[0], exception_DE);
     SET_IDT_ENTRY(idt[1], exception_DB);

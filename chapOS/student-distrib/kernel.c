@@ -150,27 +150,27 @@ entry (unsigned long magic, unsigned long addr)
 	}
 
 	/* Init the PIC */
-	//i8259_init();
+	i8259_init();
 
 	/* Initialize devices, memory, filesystem, enable device interrupts on the
 	 * PIC, any other initialization stuff... */
 	// Init the RTC
-	//rtc_init();
+	rtc_init();
 
 	//initialize the keyboard
-	//initialize_keyboard();
+	initialize_keyboard();
 	/* Enable interrupts */
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
 	 * without showing you any output */
 	printf("Enabling Interrupts\n");
 	sti();
-	//int a = 3/0;
-	/*
-	int *a;
-	a = NULL;
-	int c = *a;
-	*/
+	
+	int a = 0xFFFFFFFF;
+	a = a + 100;
+	printf("%d", a);
+
+	
   	//initialize_paging();
 	/* Execute the first program (`shell') ... */
 
