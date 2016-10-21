@@ -10,8 +10,8 @@
 // Initial value is 0. 
 static uint8_t keyboard_mode = PRESS_NOTHING;
 
-volatile uint8_t * buffer_key;			//Buffer that stores all the key pulled
-volatile uint8_t buffer_index = 0;		//Index of buffer's last added key
+//volatile uint8_t * buffer_key;			//Buffer that stores all the key pulled
+//volatile uint8_t buffer_index = 0;		//Index of buffer's last added key
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -219,16 +219,16 @@ press_other_key(uint8_t key){
 	//Get the key that is being map to scancode_array
 	actual_key = scancode_array[keyboard_mode][key];
 
-	if((buffer_index < buffer_key))
-	{	
+	/*if((buffer_index < buffer_key))
+	{*/	
 		if(actual_key != KEY_NULL)
 		{	
-			buffer_key[buffer_index] = actual_key;
-			buffer_index += 1;
+			//buffer_key[buffer_index] = actual_key;
+			//buffer_index += 1;
 			//print a key to the screen
 			putc(actual_key);
 		}
-	}
+	//}
 
 }
 

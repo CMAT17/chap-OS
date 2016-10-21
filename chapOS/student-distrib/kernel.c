@@ -178,9 +178,8 @@ entry (unsigned long magic, unsigned long addr)
   //int a = 3/0;
 
   //testing GP
-  int *a = NULL;
-  int b = *a;
-
+  //int *a = NULL;
+  //int b = *a;
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */

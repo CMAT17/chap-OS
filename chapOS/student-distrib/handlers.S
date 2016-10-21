@@ -9,9 +9,15 @@ rtc_handler:
     pushl   %eax
     pushl   %ecx
     pushl   %edx
+    pushl   %ebx
+    pushl   %esi
+    pushl   %edi
 
     call rtc_irq_handler
 
+    popl    %edi
+    popl    %esi
+    popl    %ebx
     popl    %edx
     popl    %ecx
     popl    %eax
@@ -22,9 +28,15 @@ keyboard_handler:
     pushl   %eax
     pushl   %ecx
     pushl   %edx
+    pushl   %ebx
+    pushl   %esi
+    pushl   %edi
 
     call keyboard_int_handler
 
+    popl    %edi
+    popl    %esi
+    popl    %ebx
     popl    %edx
     popl    %ecx
     popl    %eax    

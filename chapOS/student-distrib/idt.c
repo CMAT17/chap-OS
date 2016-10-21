@@ -34,7 +34,7 @@ EXCEPT_FN(exception_TS, "Invalid TSS");
 EXCEPT_FN(exception_NP, "segment Not Present");
 EXCEPT_FN(exception_SS, "Stack Segment Fault");
 EXCEPT_FN(exception_GP, "General Protection Fault");
-EXCEPT_FN(exception_PF, "Page Fault");
+//EXCEPT_FN(exception_PF, "Page Fault");
 EXCEPT_FN(exception_MF, "x87 Floating Point Exception");
 EXCEPT_FN(exception_AC, "Alignment Check");
 EXCEPT_FN(exception_MC, "Machine Check");
@@ -43,7 +43,20 @@ EXCEPT_FN(exception_VE, "Virtualization Exception");
 EXCEPT_FN(exception_SX, "Security Exception");
 //EXCEPT_FN(exception_TF, "Triple Fault");
 
+static void exception_PF(){
+    uint32_t cr2;
+    //obtain linear address 
+    asm("movl %%cr2, %0;"
+        : "=r" (cr2)
+        :
+        : "cc" 
+        );
+    printf("Page Fault at %d", cr2);
+    while(1);
+}
 
+//Generic handler
+//placeholder handler for syscalls and interrupts
 static void generic_handler(){
     printf("Interrupt/syscall unkown. pls halp \n");
 }
@@ -68,6 +81,7 @@ void init_idt()
     exception.reserved3 = 0x1;
     syscall.reserved3 = 0x1;
 
+    // next few reserved's are hard coded for trap and interrupt gates
     interrupt.reserved2 = 0x1;
     exception.reserved2 = 0x1;
     syscall.reserved2 = 0x1;
@@ -140,10 +154,25 @@ void init_idt()
             }
         }
     }
-    for(i = 32; i<NUM_VEC; i++)
-    {
+
+    //Sequentially set all the offsets for each interrupt
+    SET_IDT_ENTRY(idt[KEYBOARD-1], generic_handler);
+    //Set the keyboard handler offsets
+    SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
+    
+    for(i = KEYBOARD+1; i <RTC; i++){
         SET_IDT_ENTRY(idt[i], generic_handler);
     }
+
+    //Enable RTC Interrupts
+    SET_IDT_ENTRY(idt[RTC], rtc_handler);
+
+    for(i = RTC+1; i<NUM_VEC; i++){
+        SET_IDT_ENTRY(idt[i],generic_handler);
+    }
+    
+
+    //Fill in Segment data for exceptions
     SET_IDT_ENTRY(idt[0], exception_DE);
     SET_IDT_ENTRY(idt[1], exception_DB);
     SET_IDT_ENTRY(idt[2], exception_NMI);
@@ -166,11 +195,7 @@ void init_idt()
     SET_IDT_ENTRY(idt[20], exception_VE);
     SET_IDT_ENTRY(idt[30], exception_SX);
 
-    //Set the keyboard handler offsets
-    SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
-
-    //Enable RTC Interrupts
-    SET_IDT_ENTRY(idt[RTC], rtc_handler);
+    
 
     
 }

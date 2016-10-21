@@ -10,6 +10,7 @@
 uint8_t master_mask = 0xff; /* IRQs 0-7 */
 uint8_t slave_mask = 0xff; /* IRQs 8-15 */
 
+
 /* Initialize the 8259 PIC */
 void
 i8259_init(void)
@@ -58,7 +59,8 @@ enable_irq(uint32_t irq_num)
 	* Bits set in OCW1 mask/disable irqs. Thus must invert bits to 
 	* instead enable irqs.
 	*/
-
+	uint8_t single_bit_mask = 0x01;
+	uint32_t offset;
 	/* First check if irq_num is out of bounds */
 	if( irq_num > 15 || irq_num < 0)
 		return;
@@ -68,8 +70,9 @@ enable_irq(uint32_t irq_num)
 	if(irq_num <= 7 && irq_num >= 0)
 	{
 		/* Bit that is not set corresponds to irq to be enabled (1111 1110)*/
-		uint8_t single_bit_mask = 0xFE;
-		single_bit_mask = single_bit_mask >> irq_num;
+		
+		single_bit_mask = single_bit_mask << irq_num;
+		single_bit_mask = ~single_bit_mask;
 
 		/* Use AND so anything that is already enabled stays enabled */
 		/* So a bit that's disabled (1) resolves to enabled (0) */
@@ -83,10 +86,10 @@ enable_irq(uint32_t irq_num)
 	/* Slave irq-- 8-15 */
 	if(irq_num >= 8 && irq_num <= 15)
 	{
-		uint8_t single_bit_mask = 0xFE;
 		/* Minus 8 to recalculate offset starting from irq 8 in slave pic */
-		uint32_t offset = irq_num - 8;
-		single_bit_mask = single_bit_mask >> offset;
+		offset = irq_num - 8;
+		single_bit_mask = single_bit_mask << offset;
+		single_bit_mask = ~single_bit_mask;
 
 		/* Use AND so anything that is already enabled stays enabled */
 		/* So a bit that's disabled (1) resolves to enabled (0) */
@@ -110,7 +113,8 @@ disable_irq(uint32_t irq_num)
 	 * Bits set in OCW1 mask/disable irqs. 
 	 */
 
-
+	uint8_t single_bit_mask = 0x01; 
+	uint32_t offset;
 	/* First check if irq_num is out of bounds */
 	if(irq_num > 15 || irq_num < 0)
 		return;
@@ -121,7 +125,7 @@ disable_irq(uint32_t irq_num)
 	if(irq_num <= 7 && irq_num >= 0)
 	{
 		/* Convert irq_num to hexadecimal number corresponding to correct irq*/
-		uint8_t single_bit_mask = 0x01; 
+		
 		single_bit_mask = single_bit_mask << irq_num;
 
 		/* Use OR so anything that is already disabled stays disabled */
@@ -136,9 +140,8 @@ disable_irq(uint32_t irq_num)
 	/* Slave irq-- 8-15 */
 	if(irq_num >= 8 && irq_num <= 15)
 	{
-		uint8_t single_bit_mask = 0x01;
 		/* Minus 8 to recalculate offset starting from irq 8 in slave pic */
-		uint32_t offset = irq_num - 8;
+		offset = irq_num - 8;
 		single_bit_mask = single_bit_mask << offset;
 
 		/* Use OR so anything that is already disabled stays disabled */
