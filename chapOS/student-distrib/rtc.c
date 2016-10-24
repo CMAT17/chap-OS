@@ -3,7 +3,7 @@
 #include "i8259.h"
 
 #define WIPE_MASK   0x80
-#define DIV_AND_RS  0x26
+#define DIV_AND_RS  0x2F
 #define TESTA       0xA6
 #define TESTB       0x68
 #define WIPE_INT    0x42
@@ -62,18 +62,18 @@ void rtc_irq_handler(){
   
   //re-enable irq line
   enable_irq(RTC_IRQ);
-  sti();
+  //sti();
 }
 
 
 //-------------------------Start Sandwich Part---------------------------------
 
-int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
+int32_t rtc_read(){
   rtc_interrupt_occurred = 0;
   while(rtc_interrupt_occurred==0);
   return 0;
 }
-int32_t rtc_write(const int32_t int_rate){
+int32_t rtc_set_rate(const int32_t int_rate){
   
   return -1;
 }
