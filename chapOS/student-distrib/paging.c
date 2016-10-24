@@ -27,7 +27,7 @@ void initialize_paging(void){
   for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     //This will clear all bits as shown above, but wants to turn on R/W bit
     page_dir[i] = NOT_PRESENT;
-    page_table[i] = page_table[i-1]+PAGE_ALIGN;
+    //page_table[i] = page_table[i-1]+PAGE_ALIGN;
   }
   
   //Set the R/W of the page table to be 1
@@ -42,6 +42,16 @@ void initialize_paging(void){
   //10000011 enable RW, present, and set it to be 4MB
   page_dir[1] |= INIT_4MB_KERNEL; //This Starts at 4MB (kernel)
   
+  //Set control registers
+  paging_setCR();
+  return;
+}
+
+//paging_setCR function
+//This function sets control registers to enable aging feature.
+//Input: none
+//Return: none
+void paging_setCR(void){
   //Set cr3(PDBR) to point to PD, enable paging, Page size extension
   asm("movl %0, %%eax          \n"
       "movl %%eax, %%cr3       \n"
@@ -55,8 +65,5 @@ void initialize_paging(void){
       :"r"(page_dir)           // page_dir as the input
       :"%eax","cc"             // clobbered register
   );
-  return;
 }
-
-
 

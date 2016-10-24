@@ -20,6 +20,8 @@ volatile static int rtc_interrupt_occurred = 0;
 
 
 
+static volatile uint8_t rtc_interrupt_occurred;
+
 void rtc_init(){
     unsigned char prv_a;
     unsigned char prv_b;
@@ -48,10 +50,10 @@ void rtc_init(){
  *   masks own IRQ line so as to not interrupt itself
  *   
  */
-void rtc_irq_handler(){
-
+void rtc_irq_handler()
+{
     //Mask own irq line to prevent being interrupted by itself
-    disable_irq(RTC_IRQ);
+     disable_irq(RTC_IRQ);
     //cli();
     //Obtain contents of CMOS register C (don't really care about contents)
     outb(INDEX_REG_C,RTC_PORT);
@@ -59,7 +61,7 @@ void rtc_irq_handler(){
 
     // test_interrupts as a check
     //test_interrupts();
-
+  
     //end of interrupt done
     send_eoi(RTC_IRQ);
     
@@ -177,8 +179,8 @@ int32_t rtc_open()
 }
 
 /* rtc_close
- * INPUT: fd - 
- * OUTPUT:
+ * INPUT: none
+ * OUTPUT: none
  * RETURN VALUE: 0 if successful
  */
 int32_t rtc_close()
@@ -192,9 +194,25 @@ int32_t rtc_close()
 
 
 
-
-
-
+//-------------------------Start Sandwich Part---------------------------------
+/*
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
+  rtc_interrupt_occurred = 0;
+  while(rtc_interrupt_occurred==0);
+  return 0;
+}
+int32_t rtc_write(const int32_t int_rate){
+  
+  return -1;
+}
+int32_t rtc_open(const uint8_t* filename){
+  return -1;
+}
+int32_t rtc_close(int32_t fd){
+  return -1;
+}
+*/
+//-------------------------End Sandwich Part-----------------------------------
 
 
 
