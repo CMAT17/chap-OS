@@ -104,7 +104,7 @@ int32_t rtc_write(const void* freq, int32_t nbytes)
     if(nbytes != 4)
         return -1;
     /* Check if pointer is null */
-    if(buff == NULL)
+    if(freq == NULL)
         return -1;
 
     frequency = *freq;
