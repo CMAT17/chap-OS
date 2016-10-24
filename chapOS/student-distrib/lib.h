@@ -13,6 +13,15 @@
 #define NUM_ROWS 25
 #define ATTRIB 0x7 
 
+//My magic numbers
+#define CURSOR_HIGH_ADDR	0x0E 
+#define CURSOR_LOW_ADDR	    0x0F 
+#define HBIT_Mask 			0xFF00 
+#define LBIT_Mask 			0x00FF  
+#define INDEX_REG_PORT 		0x3D4
+#define INDEX_REG_RW_PORT 	0x3D5 
+#define BYTE_OFFSET			8 
+ 
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
 int32_t puts(int8_t *s);
@@ -164,8 +173,10 @@ int get_coordY();
 //Retrieve the X coordinate
 int get_coordX();
 
-void move_screen_up(void);
+//This will shift the whole screen up and make last line blank
+void move_screen_up();
 
+//Will update the cursor on the screen base on the location of the screen.
 void move_curser();
 
 #endif /* _LIB_H */
