@@ -89,11 +89,11 @@ open_keyboard(){
 *   Inputs: none
 *
 *   Return Value: NOTHING
-*	Function: close the keyboard with the KEYBOARD_IRQ on the PIC
+* Function: close the keyboard with the KEYBOARD_IRQ on the PIC
 */
 void
 close_keyboard(){
-	disable_irq(KEYBOARD_IRQ);
+  disable_irq(KEYBOARD_IRQ);
 }
 
 /*
@@ -106,9 +106,10 @@ close_keyboard(){
 */
 void
 keyboard_int_handler(){
-	
+	cli();
 	disable_irq(KEYBOARD_IRQ);
-
+  sti();
+  
 	uint8_t key;
 	while(1)
 	{
@@ -163,7 +164,9 @@ keyboard_int_handler(){
 	//send end of interrupt	
 	send_eoi(KEYBOARD_IRQ);
 	
+  cli();
 	enable_irq(KEYBOARD_IRQ);
+  sti();
 }
 
 /*
@@ -318,55 +321,60 @@ press_other_key(uint8_t key){
 	if(NUM_ACTUAL_MAP_KEYS <= key)
 		return;
 
-	//Get the key that is being map to scancode_array
-	actual_key = scancode_array[keyboard_mode][key];
+  //Get the key that is being map to scancode_array
+  actual_key = scancode_array[keyboard_mode][key];
 
-	if(actual_key != KEY_NULL)
-	{	
-		if(ctrl_flag == PRESS_NOTHING)
-		{
-			if(buffer_index != KEYBOARD_NUM_KEYS)
-			{
-				//add the key to the buffer
-				buffer_key[buffer_index] = actual_key;
-				buffer_index += 1;
-				//print a key to the screen
-				putc(actual_key);
-			}
-		}
-		else
-		{
-			//The control key is being press with another key
-			if( (actual_key == 'l') || (actual_key == 'L') )
-			{
-				//clear screen video memory
-				clear();
-				initialize_clear_buffer();
-				//Set the Coordinate of x and y to be zero for the screen
-				set_coordY(Y_ZERO);
-				set_coordX(X_ZERO);
-				//Update curser
-        		move_curser();
-			}
+  if(actual_key != KEY_NULL)
+  {
+    if(ctrl_flag == PRESS_NOTHING){
+      if(buffer_index != KEYBOARD_NUM_KEYS)
+      {
+        //add the key to the buffer
+        buffer_key[buffer_index] = actual_key;
+        buffer_index += 1;
+        //print a key to the screen
+        putc(actual_key);
+      }
+    }
+    else
+    {
+      if( (actual_key == 'l') || (actual_key == 'L') )
+      {
+        //clear screen video memory
+        clear();
+        initialize_clear_buffer();
+        //Set the Coordinate of x and y to be zero for the screen
+        set_coordY(Y_ZERO);
+        set_coordX(X_ZERO);
+        move_curser();
+      }
       
-      		//for testing
-      		if( (actual_key == 'w') || (actual_key == 'W') )
-			{
-				mul2 *= 2;
-       			rtc_write(&mul2,4);
-			}
+      //for testing Sandwich
+      if( (actual_key == 'w') || (actual_key == 'W') )
+      {
+        if(mul2<1024)
+          mul2 *= 2;
+        rtc_write(&mul2,4);
+      }
+      //for testing
+      if( (actual_key == 'S') || (actual_key == 's') )
+      {
+        if(mul2>2)
+          mul2 /= 2;
+        rtc_write(&mul2,4);
+      }
+      if((actual_key == '4')){
+        clear();
+        rtc_open();
+        //rtc_write(&mul2,4);
+      }
+      if((actual_key == '5')){
+        rtc_close();
+      }
+    }
+  }
 
-     		 //for testing
-      		if( (actual_key == 'S') || (actual_key == 's') )
-			{
-        		if(mul2>2)
-         		mul2 /= 2;
-        		rtc_write(&mul2,4);
-			}
-		}
-	}
-
-	return;
+  return;
 }
 
 /*

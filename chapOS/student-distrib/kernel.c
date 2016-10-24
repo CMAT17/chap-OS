@@ -2,6 +2,13 @@
  * vim:ts=4 noexpandtab
  */
 
+/* Points to reclaim: RTC interrupts (MP3.1)
+ * 					  Keyboard Interrupts (MP3.1)
+ * 					  
+ *
+ */
+
+
 #include "multiboot.h"
 #include "x86_desc.h"
 #include "lib.h"
@@ -11,6 +18,7 @@
 #include "keyboard.h"
 #include "paging.h"
 #include "types.h"
+#include "file_sys_module.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -22,6 +30,7 @@ void
 entry (unsigned long magic, unsigned long addr)
 {
 	multiboot_info_t *mbi;
+	module_t* file_sys_module;
 
 	/* Clear the screen. */
 	clear();
@@ -147,7 +156,9 @@ entry (unsigned long magic, unsigned long addr)
 		tss.esp0 = 0x800000;
 		ltr(KERNEL_TSS);
 	}
-
+	//obtain the filesystem structure
+	file_sys_module = (module_t *)mbi->mods_addr;
+	file_sys_open(file_sys_module);
 	/* Init the PIC */
 	i8259_init();
 

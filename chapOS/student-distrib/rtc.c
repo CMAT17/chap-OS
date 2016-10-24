@@ -16,6 +16,8 @@
 
 /************ Global variable(s) ************/
 
+static uint8_t is_open = 0;
+
 /* used for synchronization */
 static volatile uint8_t rtc_interrupt_occurred = 0;
 
@@ -39,7 +41,9 @@ void rtc_init(){
     outb(prv_b | PER_INT_EN, RTC_CMOS);
 
     //open the irq line for the RTC
+    cli();
     enable_irq(RTC_IRQ);
+    sti();
 }
 
 /*  rtc_irq_handler
@@ -49,8 +53,10 @@ void rtc_init(){
  */
 void rtc_irq_handler(){
   //Mask own irq line to prevent being interrupted by itself
+  cli();
   disable_irq(RTC_IRQ);
-  //cli();
+  sti();
+  
   //Obtain contents of CMOS register C (don't really care about contents)
   outb(INDEX_REG_C,RTC_PORT);
   inb(RTC_CMOS);
@@ -64,12 +70,15 @@ void rtc_irq_handler(){
   rtc_interrupt_occurred = 1;
   
   //for testing
-  char sssss = '1';
-  write_keyboard(&sssss,1);
+  if(is_open == 1){
+    char sssss = '1';
+    write_keyboard(&sssss,1);
+  }
   
   //re-enable irq line
+  cli();
   enable_irq(RTC_IRQ);
-  //sti();
+  sti();
 }
 
 
@@ -95,6 +104,9 @@ int32_t rtc_read(void* buf, int32_t nbytes){
  *               nbytes - Number of bytes written
  */
 int32_t rtc_write(const void* freq, int32_t nbytes){
+  cli();
+  disable_irq(RTC_IRQ);
+  sti();
   int frequency;
   int rate;
   unsigned char prev_reg_A;
@@ -161,6 +173,10 @@ int32_t rtc_write(const void* freq, int32_t nbytes){
   /* Clear low 4 bits of prev A reg value and AND with new rate value */
   outb(((prev_reg_A & HI_4_MASK)| rate), RTC_CMOS);
 
+  
+  cli();
+  enable_irq(RTC_IRQ);
+  sti();
   /* Returns number of bytes written */
   return nbytes;
 }
@@ -172,7 +188,14 @@ int32_t rtc_write(const void* freq, int32_t nbytes){
  * RETURN VALUE: 0 - if successful
  */
 int32_t rtc_open(){
-  rtc_init();
+  /*if(!is_open){
+    rtc_init();
+    is_open = 1;
+  }
+  else{
+    enable_irq(RTC_IRQ);
+  }*/
+  is_open = 1;
   return 0;
 }
 
@@ -182,6 +205,9 @@ int32_t rtc_open(){
  * RETURN VALUE: 0 if successful
  */
 int32_t rtc_close(){
+  //Mask own irq line to prevent being interrupted by itself
+  //disable_irq(RTC_IRQ);
+  is_open = 0;
   return 0;
 }
 
