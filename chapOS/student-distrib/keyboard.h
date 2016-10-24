@@ -71,5 +71,8 @@ void set_ctrl_flag(uint8_t key);
 //Set the alt_flag base on the key input. 
 void set_alt_flag(uint8_t key);
 
+int32_t read_keyboard(void * buff, int32_t nbytes);
+
+int32_t write_keyboard(void * buff, int32_t nbytes);
 
 #endif /* end of _KEYBOARD_H */

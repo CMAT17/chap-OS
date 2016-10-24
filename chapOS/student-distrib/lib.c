@@ -183,26 +183,27 @@ puts(int8_t* s)
 void
 putc(uint8_t c)
 {
-    if(c == '\n' || c == '\r') {
-    	if(screen_y<NUM_ROWS-1){
-        	screen_y++;
-    	}
-    	else
-        	move_screen_up();
-        screen_x=0;
-    } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        
-        //screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-        if(screen_y>=NUM_ROWS-1&&screen_x>=NUM_COLS){
-        	move_screen_up();
-        }
-        else if(screen_x>=NUM_COLS)
-        	screen_y++;
-        screen_x %= NUM_COLS;
+  if(c == '\n' || c == '\r') {
+    if(screen_y<NUM_ROWS-1){
+      screen_y++;
     }
+    else
+      move_screen_up();
+    screen_x=0;
+  } else {
+    *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
+    *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
+    screen_x++;
+    
+    //screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+    if(screen_y>=NUM_ROWS-1&&screen_x>=NUM_COLS){
+      move_screen_up();
+    }
+    else if(screen_x>=NUM_COLS)
+      screen_y++;
+    screen_x %= NUM_COLS;
+  }
+  move_curser();
 }
 
 void
@@ -639,4 +640,20 @@ get_coordX()
 {
 	return screen_x;
 }
+
+void
+move_curser(){
+  uint16_t location = (screen_y*NUM_COLS)+screen_x;
+  if(location>=NUM_COLS*NUM_ROWS)
+    location = NUM_COLS*NUM_ROWS - 1;
+  //High port to index VGA registers
+  outb(0x0E,0x3D4);
+  outb((location&0xFF00)>>8,0x3D5);
+  //Low port to index VGA registers
+  outb(0x0F,0x3D4);
+  outb(location&0x00FF,0x3D5);
+}
+
+
+
 

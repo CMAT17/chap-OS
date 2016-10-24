@@ -1,6 +1,7 @@
 #include "rtc.h"
 #include "lib.h"
 #include "i8259.h"
+#include "keyboard.h"
 
 #define WIPE_MASK   0x80
 #define DIV_AND_RS  0x2F

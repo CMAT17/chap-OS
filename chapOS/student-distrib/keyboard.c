@@ -13,8 +13,6 @@ static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
 volatile uint8_t buffer_key[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
 volatile uint8_t buffer_index = 0;						//Index of buffer's last added key
-volatile uint8_t cursor_pos_x;							//Position of x coordinate on the screen
-volatile uint8_t cursor_pos_y; 							//Position of y coordinate on the screen
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -210,17 +208,18 @@ press_caps(){
 */
 void
 press_enter() {
-	
-	
-	//y = get_coordY();
-	//Move to the next line for the coordinate
-	//set_coordY(y+1);
-	//set_coordX(X_ZERO);
-	
-	//Clear the buffer
-	initialize_clear_buffer();
-	putc('\n');
-	
+
+
+  //y = get_coordY();
+  //Move to the next line for the coordinate
+  //set_coordY(y+1);
+  //set_coordX(X_ZERO);
+
+  //Clear the buffer
+  buffer_key[buffer_index] = KEY_NULL;
+  initialize_clear_buffer();
+  putc('\n');
+
 }
 
 /*
@@ -265,33 +264,34 @@ unpress_shift(){
 */
 void
 press_bskp() {
-	if( buffer_index  > 0)
-	{
-		int x; 
-		int y;
+  if( buffer_index  > 0)
+  {
+    int x; 
+    int y;
 
-		buffer_key[buffer_index-1] = KEY_NULL;
-		buffer_index = buffer_index - 1;
+    buffer_key[buffer_index-1] = KEY_NULL;
+    buffer_index = buffer_index - 1;
 
-		x = get_coordX();
-		y = get_coordY();
-		if(y>1||x>0){
-			*(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1)) = ' ';
-        	*(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1) + 1) = ATTRIB;
-    	}
-		if( x != 0)
-			set_coordX(x-1);
-		else
-		{	
-			if(y>0)
-				//Move back one row
-				set_coordY(y-1);
+    x = get_coordX();
+    y = get_coordY();
+    if(y>1||x>0){
+      *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1)) = ' ';
+          *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1) + 1) = ATTRIB;
+      }
+    if( x != 0)
+      set_coordX(x-1);
+    else
+    {	
+      if(y>0)
+        //Move back one row
+        set_coordY(y-1);
 
-			//NUM_COLS was already defined for us in lib.c
-			//Move back one col
-			set_coordX(NUM_COLS-1);
-		}
-	}
+      //NUM_COLS was already defined for us in lib.c
+      //Move back one col
+      set_coordX(NUM_COLS-1);
+    }
+  }
+  move_curser();
 }
 
 /*
@@ -336,6 +336,7 @@ press_other_key(uint8_t key){
 				//Set the Coordinate of x and y to be zero for the screen
 				set_coordY(Y_ZERO);
 				set_coordX(X_ZERO);
+        move_curser();
 			}
 		}
 	}
@@ -351,17 +352,17 @@ press_other_key(uint8_t key){
 */
 void
 initialize_clear_buffer() {
-	int i;
+  //int i;
 
-	//Set the buffer index to the beginning
-	buffer_index = 0;
-
-	for(i = 0; i < KEYBOARD_NUM_KEYS; i++)
-	{
-		//Set the whole buffer to null key 
-		buffer_key[i] = KEY_NULL;
-		
-	}
+  //Set the buffer index to the beginning
+  buffer_index = 0;
+/*
+  for(i = 0; i < KEYBOARD_NUM_KEYS; i++)
+  {
+    //Set the whole buffer to null key 
+    buffer_key[i] = KEY_NULL;
+    
+  }*/
 }
 
 /*
@@ -398,21 +399,28 @@ set_alt_flag(uint8_t key) {
 		alt_flag = PRESS_NOTHING;
 }
 
-/*
+
 //Return data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
 //The line returned should include the line feed character.
 int32_t 
-keyboard_read(int32_t fd, void * buff, int32_t nbytes) {
-	uint8_t temp_buff;
-	int32_t counter;
-
-	temp_buff = (uint8_t *)buff;	
-	for()
+read_keyboard(void * buff, int32_t nbytes){
+  int i;
+  for(i=0;i<KEYBOARD_NUM_KEYS;i++){
+    if(i>=nbytes||buffer_key[i]==KEY_NULL)
+      return i;
+    *(unsigned char*)(buff+i) = buffer_key[i];
+  }
+  return 0;
 }
-*/
 
-
-
+int32_t 
+write_keyboard(void * buff, int32_t nbytes){
+  int i;
+  for(i=0;i<nbytes;i++){
+    putc(*(unsigned char*)(buff+i));
+  }
+  return i;
+}
 
 
 

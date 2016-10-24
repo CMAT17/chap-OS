@@ -166,4 +166,11 @@ int get_coordX();
 
 void move_screen_up(void);
 
+void move_curser();
+
 #endif /* _LIB_H */
+
+
+
+
+
