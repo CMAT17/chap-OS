@@ -13,7 +13,7 @@
 #define NOT_PRESENT 2
 #define INIT_4MB_KERNEL 0x400083
 
-//VIdo memory location to be map to page table (first page directory)
+//Video memory location to be map to page table (first page directory)
 #ifndef VIDEO
 #define VIDEO 0xB8000
 #endif
@@ -22,5 +22,7 @@
 //Initialize paging parameters and registers
 void initialize_paging(void);
 
+//Set controll registers for paging
+void paging_setCR(void);
 
 #endif

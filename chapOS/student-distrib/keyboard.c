@@ -6,12 +6,16 @@
 #include "lib.h"
 #include "i8259.h"
 
+//testing
+#include "rtc.h"
+ 
 // See scancode_array, value correspond to scancode_array's of either (0,1,2,3)
-// Initial value is 0. 
-static uint8_t keyboard_mode = PRESS_NOTHING;
+static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
+static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
+static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
-//volatile uint8_t * buffer_key;			//Buffer that stores all the key pulled
-//volatile uint8_t buffer_index = 0;		//Index of buffer's last added key
+volatile uint8_t buffer_key[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+volatile uint8_t buffer_index = 0;						//Index of buffer's last added key
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -67,15 +71,29 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 };
 
 /*
-* void initialize_keyboard()
+* void open_keyboard()
 *   Inputs: none
 *
 *   Return Value: NOTHING
 *	Function: Initialize keyboard with the KEYBOARD_IRQ on the PIC
+*   Also set up the buffer for the keyboard
 */
 void
-initialize_keyboard(){
+open_keyboard(){
+	initialize_clear_buffer();
 	enable_irq(KEYBOARD_IRQ);
+}
+
+/*
+* void close_keyboard(){
+*   Inputs: none
+*
+*   Return Value: NOTHING
+*	Function: close the keyboard with the KEYBOARD_IRQ on the PIC
+*/
+void
+close_keyboard(){
+	disable_irq(KEYBOARD_IRQ);
 }
 
 /*
@@ -106,9 +124,9 @@ keyboard_int_handler(){
 		case CAPS_DOWN:
 			press_caps();
 			break;
-		/*case ENTER:
+		case ENTER:
 			press_enter();
-			break;	*/	
+			break;	
 		case LEFT_SHIFT_DOWN:
 			press_shift();
 			break;
@@ -121,9 +139,21 @@ keyboard_int_handler(){
 		case RIGHT_SHIFT_UP:
 			unpress_shift();
 			break;
-		/*case BKSP:
+		case BKSP:
 			press_bskp();
-			break;*/	
+			break;
+		case CTRL_DOWN:
+			set_ctrl_flag(CTRL_DOWN);
+			break;
+		case CTRL_UP:
+			set_ctrl_flag(CTRL_UP);
+			break;	
+		case ALT_DOWN:
+			set_alt_flag(ALT_DOWN);
+			break;	
+		case ALT_UP:
+			set_alt_flag(ALT_UP);
+			break;					
 		default:
 			press_other_key(key);
 			break;
@@ -145,21 +175,55 @@ keyboard_int_handler(){
 void
 press_caps(){
 	//Check for the each cases of the keyboard mode and modify it according to caps being turn off or on
-	if(keyboard_mode == PRESS_NOTHING)
+	switch(keyboard_mode) {
+		case PRESS_CAP_ONLY:
+			keyboard_mode = PRESS_NOTHING;
+			break;
+		case PRESS_SHIFT_ONLY:
+			keyboard_mode = PRESS_SHIFT_CAP;
+			break;
+		case PRESS_SHIFT_CAP:
+			keyboard_mode = PRESS_SHIFT_ONLY;
+			break;
+		default:
+			keyboard_mode = PRESS_CAP_ONLY;
+			break;		
+	}
+
+
+	/*if(keyboard_mode == PRESS_NOTHING)
 		keyboard_mode = PRESS_CAP_ONLY;
 	else if( keyboard_mode == PRESS_SHIFT_ONLY )
 		keyboard_mode = PRESS_SHIFT_CAP;
 	else if( keyboard_mode == PRESS_SHIFT_CAP)
-		keyboard_mode == PRESS_SHIFT_ONLY;
+		keyboard_mode = PRESS_SHIFT_ONLY;
 	else
 		keyboard_mode = PRESS_NOTHING;
+		*/
 }
 
-//To be done later
 /*
+* void press_enter()
+*   Inputs: none
+*
+*   Return Value: NOTHING
+*	Function: Will shift the screen x and y coordinate down one line and clear buffer
+*/
 void
-press_enter(){
-}*/
+press_enter() {
+
+
+  //y = get_coordY();
+  //Move to the next line for the coordinate
+  //set_coordY(y+1);
+  //set_coordX(X_ZERO);
+
+  //Clear the buffer
+  buffer_key[buffer_index] = KEY_NULL;
+  initialize_clear_buffer();
+  putc('\n');
+
+}
 
 /*
 * void press_shift(){
@@ -195,10 +259,43 @@ unpress_shift(){
 
 }
 
-//To be done later
-/*void
-press_bskp(){
-}*/
+/*
+* void press_bskp(){
+*   Inputs: none
+*   Return Value: NOTHING
+*	Function: Will modify the buffer array and index and the screen
+*/
+void
+press_bskp() {
+  if( buffer_index  > 0)
+  {
+    int x; 
+    int y;
+
+    buffer_key[buffer_index-1] = KEY_NULL;
+    buffer_index = buffer_index - 1;
+
+    x = get_coordX();
+    y = get_coordY();
+    if(y>1||x>0){
+      *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1)) = ' ';
+          *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1) + 1) = ATTRIB;
+      }
+    if( x != 0)
+      set_coordX(x-1);
+    else
+    {	
+      if(y>0)
+        //Move back one row
+        set_coordY(y-1);
+
+      //NUM_COLS was already defined for us in lib.c
+      //Move back one col
+      set_coordX(NUM_COLS-1);
+    }
+  }
+  move_curser();
+}
 
 /*
 * void press_other_key(uint8_t key){
@@ -211,6 +308,9 @@ void
 press_other_key(uint8_t key){
 
 	uint8_t actual_key = 0;
+  
+  //for testing
+  static uint32_t mul2 = 2;
 
 	//If key is not in the keyboard array than it does not need to be consider
 	if(KEYBOARD_NUM_KEYS <= key)
@@ -219,24 +319,129 @@ press_other_key(uint8_t key){
 	//Get the key that is being map to scancode_array
 	actual_key = scancode_array[keyboard_mode][key];
 
-	/*if((buffer_index < buffer_key))
-	{*/	
-		if(actual_key != KEY_NULL)
-		{	
-			//buffer_key[buffer_index] = actual_key;
-			//buffer_index += 1;
-			//print a key to the screen
-			putc(actual_key);
+	if(actual_key != KEY_NULL)
+	{	
+		if(ctrl_flag == PRESS_NOTHING)
+		{
+			if(buffer_index != KEYBOARD_NUM_KEYS)
+			{
+				//add the key to the buffer
+				buffer_key[buffer_index] = actual_key;
+				buffer_index += 1;
+				//print a key to the screen
+				putc(actual_key);
+			}
 		}
-	//}
+		else
+		{
+			if( (actual_key == 'l') || (actual_key == 'L') )
+			{
+				//clear screen video memory
+				clear();
+				initialize_clear_buffer();
+				//Set the Coordinate of x and y to be zero for the screen
+				set_coordY(Y_ZERO);
+				set_coordX(X_ZERO);
+        move_curser();
+			}
+      
+      //for testing
+      if( (actual_key == 'w') || (actual_key == 'W') )
+			{
+        if(mul2<1024)
+          mul2 *= 2;
+        rtc_write(&mul2,4);
+			}
+      //for testing
+      if( (actual_key == 'S') || (actual_key == 's') )
+			{
+        if(mul2>2)
+          mul2 /= 2;
+        rtc_write(&mul2,4);
+			}
+		}
+	}
 
+	return;
+}
+
+/*
+* void set_clear_buffer() 
+*   Inputs: none
+*   Return Value: NOTHING
+*	Function: Set the whole buffer to null key and set the index to 0
+*/
+void
+initialize_clear_buffer() {
+  //int i;
+
+  //Set the buffer index to the beginning
+  buffer_index = 0;
+/*
+  for(i = 0; i < KEYBOARD_NUM_KEYS; i++)
+  {
+    //Set the whole buffer to null key 
+    buffer_key[i] = KEY_NULL;
+    
+  }*/
+}
+
+/*
+* void set_ctrl_flag(uint8_t key)
+*   Inputs: the key for either ctrl press down or up
+*   Return Value: NOTHING
+*	Function: Set the ctrl_flag base on the key input.
+*   Flag = 0 means not pressed
+*	Flag = 4 mean pressed
+*/
+void
+set_ctrl_flag(uint8_t key) {
+	//Set ctrl_flag base on key input.
+	if(key == CTRL_DOWN)
+		ctrl_flag = PRESS_CTRL;
+	if(key == CTRL_UP)
+		ctrl_flag = PRESS_NOTHING;
+}
+
+/*
+* void set_alt_flag(uint8_t key) 
+*   Inputs: the key for either alt press down or up
+*   Return Value: NOTHING
+*	Function: Set the alt_flag base on the key input. 
+*   Flag = 0 means not pressed
+*	Flag = 5 mean pressed
+*/
+void
+set_alt_flag(uint8_t key) {
+	//Set ctrl_flag base on key input.
+	if(key == ALT_DOWN)
+		alt_flag = PRESS_ALT;
+	if(key == ALT_UP)
+		alt_flag = PRESS_NOTHING;
 }
 
 
+//Return data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
+//The line returned should include the line feed character.
+int32_t 
+read_keyboard(void * buff, int32_t nbytes){
+  int i;
+  for(i=0;i<KEYBOARD_NUM_KEYS;i++){
+    if(i>=nbytes||buffer_key[i]==KEY_NULL)
+      return i;
+    *(unsigned char*)(buff+i) = buffer_key[i];
+  }
+  return 0;
+}
 
-
-
-
+int32_t 
+write_keyboard(void * buff, int32_t nbytes){
+  int i;
+  for(i=0;i<nbytes;i++){
+    putc(*(unsigned char*)(buff+i));
+  }
+  return i;
+}
 
 
 
