@@ -4,3 +4,5 @@
 *.sh
 *.dep
 /chapOS/student-distrib/bootimg
+/chapOS/student-distrib/.DS_Store
+/chapOS/student-distrib/filesys_img
