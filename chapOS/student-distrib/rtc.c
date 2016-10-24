@@ -75,10 +75,10 @@ void rtc_irq_handler(){
  * RETURN VALUE: 0 only after an interrupt has occurred
  */
 int32_t rtc_read(void* buf, int32_t nbytes){
-  rtc_interrupt_occurred = 0;
+  /*rtc_interrupt_occurred = 0;
   while(!rtc_interrupt_occurred){
     // spin
-  }
+  }*/
   return 0;
 }
 
