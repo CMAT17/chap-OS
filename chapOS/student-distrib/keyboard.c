@@ -348,7 +348,8 @@ press_other_key(uint8_t key){
       //for testing
       if( (actual_key == 'w') || (actual_key == 'W') )
 			{
-				mul2 *= 2;
+        if(mul2<1024)
+          mul2 *= 2;
         rtc_write(&mul2,4);
 			}
       //for testing
