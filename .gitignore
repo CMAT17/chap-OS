@@ -3,4 +3,4 @@
 *.img
 *.sh
 *.dep
-bootimg
+/chapOS/student-distrib/bootimg

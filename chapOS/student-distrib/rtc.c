@@ -101,7 +101,7 @@ int32_t rtc_write(const void* freq, int32_t nbytes){
   if(freq == NULL)
     return -1;
 
-  frequency = *freq;
+  frequency = *(uint32_t*)freq;
   /* Frequency must be power of 2 */
   /* And not over 1024 Hz, or less than 0 Hz */
   if( ! ((frequency != 0 ) && ((frequency & (frequency -1)) == 0)))
