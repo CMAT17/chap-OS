@@ -365,6 +365,11 @@ press_other_key(uint8_t key){
       }
       if((actual_key == '4')){
         clear();
+        initialize_clear_buffer();
+        //Set the Coordinate of x and y to be zero for the screen
+        set_coordY(Y_ZERO);
+        set_coordX(X_ZERO);
+        move_curser();
         rtc_open();
         //rtc_write(&mul2,4);
       }
