@@ -3,10 +3,6 @@
  */
 
 #include "lib.h"
-#define VIDEO 0xB8000
-#define NUM_COLS 80
-#define NUM_ROWS 25
-#define ATTRIB 0x7
 
 static int screen_x;
 static int screen_y;
@@ -188,15 +184,40 @@ void
 putc(uint8_t c)
 {
     if(c == '\n' || c == '\r') {
-        screen_y++;
+    	if(screen_y<NUM_ROWS-1){
+        	screen_y++;
+    	}
+    	else
+        	move_screen_up();
         screen_x=0;
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+        
+        //screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        if(screen_y>=NUM_ROWS-1&&screen_x>=NUM_COLS){
+        	move_screen_up();
+        }
+        else if(screen_x>=NUM_COLS)
+        	screen_y++;
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+}
+
+void
+move_screen_up(void){
+	int x,y;
+	for(y=1;y<NUM_ROWS;y++){
+		for(x=0;x<NUM_COLS;x++){
+			*(uint8_t *)(VIDEO + ((NUM_COLS*(y-1) + x) << 1)) = *(uint8_t *)(VIDEO + ((NUM_COLS*y + x) << 1));
+        	*(uint8_t *)(VIDEO + ((NUM_COLS*(y-1) + x) << 1) + 1) = ATTRIB;
+		}
+	}
+	for(x=0;x<NUM_COLS;x++){
+		*(uint8_t *)(VIDEO + ((NUM_COLS*(NUM_ROWS-1) + x) << 1)) = ' ';
+   	  	*(uint8_t *)(VIDEO + ((NUM_COLS*(NUM_ROWS-1) + x) << 1) + 1) = ATTRIB;
+   	}
 }
 
 /*
@@ -557,7 +578,6 @@ strncpy(int8_t* dest, const int8_t* src, uint32_t n)
 *   Return Value: void
 *	Function: increments video memory. To be used to test rtc
 */
-
 void
 test_interrupts(void)
 {
@@ -566,3 +586,57 @@ test_interrupts(void)
 		video_mem[i<<1]++;
 	}
 }
+
+//-----------------------------------------------------------------------------
+//Added functions
+
+/*
+* void set_coordY(int value)
+*   Inputs: the value to set the screen_y to
+*   Return Value: void
+*	Function: Set screen_y to value
+*/
+void 
+set_coordY(int value)
+{
+	screen_y = value;
+	return;
+}
+
+/*
+* void set_coordX(int value)
+*   Inputs: the value to set the screen_x to
+*   Return Value: void
+*	Function: Set screen_x to value
+*/
+void 
+set_coordX(int value)
+{
+	screen_x = value;
+	return;
+}
+
+/*
+* void get_coordY()
+*   Inputs: none
+*   Return Value: return the y coordinate
+*	Function: Retrieve the y coordinate
+*/
+int 
+get_coordY()
+{
+	return screen_y;
+}
+
+/*
+* void get_coordX()
+*   Inputs: none
+*   Return Value: return the X coordinate
+*	Function: Retrieve the X coordinate
+*/
+int 
+get_coordX()
+{
+	return screen_x;
+}
+
