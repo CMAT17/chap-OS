@@ -2,6 +2,7 @@
 #define _FILE_SYS_H_
 
 #include "types.h"
+#include "multiboot.h"
 
 #define NUM_RESERVED_DENTRY 24
 #define NUM_RESERVED_BOOT   52
@@ -22,19 +23,19 @@ typedef struct boot_block{
     uint32_t num_inodes;
     uint32_t num_data_blocks;
     uint8_t reserved[NUM_RESERVED_BOOT];
-    dentry_t dir_entries[MAX_DENTRY_NUM]
+    dentry_t dir_entries[MAX_DENTRY_NUM];
 } boot_block_t;
 
 typedef struct inode{
     uint32_t length;
-    uint32_t data_block[MAX_DATA_BLOCK_NUM]
+    uint32_t data_block[MAX_DATA_BLOCK_NUM];
 } inode_t;
 
 void file_sys_open(module_t* file_sys_module);
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry);
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
-int32_t file_sys_open(const uint8_t* file_name);
+int32_t file_open(const uint8_t* file_name);
 int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t file_sys_close(int32_t fd);
 

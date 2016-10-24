@@ -9,9 +9,9 @@ static uint32_t data_block_start;
 
 void file_sys_open(module_t* file_sys_module)
 {
-    file_sys_start = file_sys_module.mod_start;
+    file_sys_start = file_sys_module->mod_start;
     inode_start = file_sys_start + DATA_BLOCK_SIZE;
-    boot_block_ptr = (boot_block_t)file_sys_start;
+    boot_block_ptr = (boot_block_t *)file_sys_start;
     data_block_start = file_sys_start + (1+boot_block_ptr->num_inodes)*DATA_BLOCK_SIZE;
 }
 
@@ -20,9 +20,9 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
     int file_not_found = 1;
     int i = 0;
 
-    while(file_not_found == 1 && i < MAX_DENTRY_SIZE)
+    while(file_not_found == 1 && i < MAX_DENTRY_NUM)
     {
-        if(strncmp((int8_t*)fname, boot_block_ptr->dir_entries[i].file_name, FILE_NAME_SIZE) == 0){
+        if(strncmp((int8_t*)fname,(int8_t*) boot_block_ptr->dir_entries[i].file_name, FILE_NAME_SIZE) == 0){
             file_not_found = 0;
             //copy file name
             strncpy((int8_t*)dentry->file_name, (int8_t*)fname, FILE_NAME_SIZE);
@@ -40,14 +40,14 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
 
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
 {
-    if(index<0 || index>=MAX_DENTRY_SIZE)
+    if(index<0 || index>=MAX_DENTRY_NUM)
     {
         return -1;
     }
 
     strncpy((int8_t*)dentry->file_name, (int8_t)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
-    dentry->file_type = boot_block_ptr->dir_entries[i].file_type;
-    dentry->inode_num = boot_block_ptr->dir_entries[i].inode_num;
+    dentry->file_type = boot_block_ptr->dir_entries[index].file_type;
+    dentry->inode_num = boot_block_ptr->dir_entries[index].inode_num;
 
     return 0;
 
@@ -56,7 +56,6 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length)
 {
     int i;
-    int32_t
     uint32_t cur_block_index;
     uint32_t loc_cur_block_index;
     uint32_t cur_data_block;
@@ -91,17 +90,17 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
             return -1;
         }
 
-        buf[i] = uint8_t((uint8_t*)cur_data_block)[loc_cur_block_index];
+        buf[i] = (uint8_t) ((uint8_t*)cur_data_block)[loc_cur_block_index];
         i++;
         loc_cur_block_index++;
     }
     return i;
 }
 
-int32_t file_sys_open(const uint8_t* file_name)
+int32_t file_open(const uint8_t* file_name)
 {
     dentry_t* open_dentry;
-    return read_dentry_by_name(file_name);
+    return read_dentry_by_name(file_name, open_dentry);
 }
 
 int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes)
