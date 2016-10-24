@@ -27,7 +27,7 @@ void initialize_paging(void){
   for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     //This will clear all bits as shown above, but wants to turn on R/W bit
     page_dir[i] = NOT_PRESENT;
-    //page_table[i] = page_table[i-1]+PAGE_ALIGN;
+    page_table[i] = page_table[i-1]+PAGE_ALIGN;
   }
   
   //Set the R/W of the page table to be 1

@@ -75,10 +75,10 @@ void rtc_irq_handler(){
  * RETURN VALUE: 0 only after an interrupt has occurred
  */
 int32_t rtc_read(void* buf, int32_t nbytes){
-  /*rtc_interrupt_occurred = 0;
+  rtc_interrupt_occurred = 0;
   while(!rtc_interrupt_occurred){
     // spin
-  }*/
+  }
   return 0;
 }
 
@@ -186,7 +186,6 @@ int32_t rtc_close(){
 //-------------------------Start Sandwich Part---------------------------------
 /*
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
->>>>>>> 6324160df2af58b302bfa11f550ac24369599b94
   rtc_interrupt_occurred = 0;
   while(rtc_interrupt_occurred==0);
   return 0;
