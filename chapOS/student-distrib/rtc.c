@@ -19,7 +19,9 @@
 static uint8_t is_open = 0;
 
 /* used for synchronization */
-static volatile uint8_t rtc_interrupt_occurred = 0;
+volatile uint8_t rtc_interrupt_occurred;
+
+//static uint8_t rtc_counter = 0;
 
 void rtc_init(){
     unsigned char prv_a;
@@ -67,7 +69,7 @@ void rtc_irq_handler(){
   //end of interrupt done
   send_eoi(RTC_IRQ);
   
-  rtc_interrupt_occurred = 1;
+  
   
   //for testing
   if(is_open == 1){
@@ -78,7 +80,9 @@ void rtc_irq_handler(){
   //re-enable irq line
   cli();
   enable_irq(RTC_IRQ);
+  rtc_interrupt_occurred = 1;
   sti();
+  
 }
 
 
@@ -88,9 +92,9 @@ void rtc_irq_handler(){
  * OUTPUT: none
  * RETURN VALUE: 0 only after an interrupt has occurred
  */
-int32_t rtc_read(void* buf, int32_t nbytes){
-  rtc_interrupt_occurred = 0;
-  while(!rtc_interrupt_occurred){
+int32_t rtc_read(){
+  //rtc_interrupt_occurred = 0;
+  while(rtc_interrupt_occurred==0){
     // spin
   }
   return 0;

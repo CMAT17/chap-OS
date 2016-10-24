@@ -365,7 +365,7 @@ press_other_key(uint8_t key){
       }
       if((actual_key == '4')){
         clear();
-        initialize_clear_buffer();
+        //initialize_clear_buffer();
         //Set the Coordinate of x and y to be zero for the screen
         set_coordY(Y_ZERO);
         set_coordX(X_ZERO);
@@ -375,6 +375,35 @@ press_other_key(uint8_t key){
       }
       if((actual_key == '5')){
         rtc_close();
+      }
+      //for testing
+      if((actual_key == '6')){
+        int i;
+        char test_text[30] = "Test read keyboard buffer";
+        char my_test_buf[128];
+        clear();
+        set_coordY(Y_ZERO);
+        set_coordX(X_ZERO);
+        move_curser();
+        write_keyboard(&test_text,25);
+        putc(NEW_LINE);
+        
+        read_keyboard(my_test_buf,128);
+        for(i=0;i<buffer_index&&my_test_buf[i]!=KEY_NULL;i++)
+          putc(my_test_buf[i]);
+        
+      }
+      if((actual_key == '7')){
+        clear();
+        set_coordY(Y_ZERO);
+        set_coordX(X_ZERO);
+        move_curser();
+        char test_text[30] = "Waiting for RTC interrupt";
+        char response_text[30] = "RTC interrupt occurred";
+        write_keyboard(&test_text,25);
+        putc(NEW_LINE);
+        rtc_read();
+        write_keyboard(&response_text,22);
       }
     }
   }
@@ -448,17 +477,19 @@ set_alt_flag(uint8_t key) {
 */
 int32_t 
 read_keyboard(void * buff, int32_t nbytes) {
-  	int i;
+  int i;
 
-  	for(i=0; i<KEYBOARD_NUM_KEYS; i++) {
-  		//Only copy the key if it is not null or up to nbytes
-    	if( i>=nbytes || buffer_key[i] == KEY_NULL)
-      		return i;
-      	//Copy the key from buffer to the buff
-    	*(unsigned char*)(buff+i) = buffer_key[i];
- 	}
+  for(i=0; i<KEYBOARD_NUM_KEYS; i++) {
+    //Only copy the key if it is not null or up to nbytes
+    if(i>=nbytes)
+      return i;
+    //Copy the key from buffer to the buff
+    *(unsigned char*)(buff+i) = buffer_key[i];
+    if(buffer_key[i] == KEY_NULL)
+      return i;
+}
 
-  	return 0;
+  return 0;
 }
 
 /*
