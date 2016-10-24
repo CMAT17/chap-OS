@@ -6,11 +6,9 @@ static uint32_t file_sys_start;
 static boot_block_t* boot_block_ptr;
 static uint32_t inode_start;
 static uint32_t data_block_start;
-static volatile int fs_is_open = 0;
 
 void file_sys_init(module_t* file_sys_module)
 {
-    fs_is_open = 1;
     file_sys_start = file_sys_module->mod_start;
     inode_start = file_sys_start + DATA_BLOCK_SIZE;
     boot_block_ptr = (boot_block_t *)file_sys_start;
@@ -22,11 +20,15 @@ int32_t file_sys_open()
     return 0;
 }
 
-int32_t file_sys_close()
+int32_t file_sys_close(int32_t fd)
 {
     return 0;
 }
 
+int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes)
+{
+    return -1;
+}
 
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
 {
@@ -108,37 +110,4 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
         loc_cur_block_index++;
     }
     return i;
-}
-
-void files_test(void)
-{
-    dentry_t dentry;
-    int i;
-    int8_t * asdf = "frame0.txt";
-    uint8_t buf[6000];
-    /*
-    for( i = 0; i < 10; i++ )
-    {
-        read_dentry_by_index( i, &dentry );
-        puts(dentry.filename);
-        putc(' ');
-        printf("%d", dentry.inode);
-        putc('\n');
-    }
-    */
-    read_dentry_by_name((uint8_t *)asdf, &dentry); 
-    //printf("%d\n", dentry.inode);
-    
-    int a = read_data(dentry.inode, 0, buf, 200);
-    
-    for( i = 0; i < a; i++ )
-    {
-        printf("%c", buf[i]);
-        /*
-        if( (i+1) % 16 == 0 )
-        {
-            putc('\n');
-        }
-        */
-    }
 }
