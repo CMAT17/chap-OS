@@ -13,6 +13,7 @@
 //Magic Numbers
 #define	KEYBOARD_MODE_SIZE	4
 #define KEYBOARD_NUM_KEYS	128
+#define NUM_ACTUAL_MAP_KEYS 87 
 #define CAPS_DOWN 			0x3A
 #define	ENTER				0x1C
 #define	LEFT_SHIFT_DOWN		0x2A
@@ -32,7 +33,8 @@
 
 #define PRESS_CTRL			4 
 #define PRESS_ALT			5 
-#define	KEY_NULL    		'\0' 
+#define	KEY_NULL    		'\0'
+#define NEW_LINE			'\n' 
 
 #define X_ZERO				0
 #define Y_ZERO				0 
@@ -71,8 +73,12 @@ void set_ctrl_flag(uint8_t key);
 //Set the alt_flag base on the key input. 
 void set_alt_flag(uint8_t key);
 
+//Function: Copy data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
+//Afterward return the number of keys copied.
 int32_t read_keyboard(void * buff, int32_t nbytes);
 
+//Function: Keep printing the keys in the buff until the nbytes is satisfied
+//Afterward return the number of keys printed.
 int32_t write_keyboard(void * buff, int32_t nbytes);
 
 #endif /* end of _KEYBOARD_H */

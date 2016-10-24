@@ -14,7 +14,6 @@ static char* video_mem = (char *)VIDEO;
 *   Return Value: none
 *	Function: Clears video memory
 */
-
 void
 clear(void)
 {
@@ -179,43 +178,61 @@ puts(int8_t* s)
 *   Return Value: void
 *	Function: Output a character to the console 
 */
-
 void
 putc(uint8_t c)
 {
-  if(c == '\n' || c == '\r') {
-    if(screen_y<NUM_ROWS-1){
-      screen_y++;
-    }
-    else
-      move_screen_up();
-    screen_x=0;
-  } else {
-    *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
-    *(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
-    screen_x++;
+	//This is modify from original file
+	//Make a new line
+  	if(c == '\n' || c == '\r') 
+  	{
+  		//Check if the screen need to be shifted up
+    	if(screen_y < NUM_ROWS-1)
+    	{
+      		screen_y++;
+   		}
+    	else
+     		move_screen_up();
+    	screen_x=0;
+  	} 
+  	else
+  	{
+  		//Print a character to terminal
+   		*(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1)) = c;
+    	*(uint8_t *)(video_mem + ((NUM_COLS*screen_y + screen_x) << 1) + 1) = ATTRIB;
+    	screen_x++;
     
-    //screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
-    if(screen_y>=NUM_ROWS-1&&screen_x>=NUM_COLS){
-      move_screen_up();
-    }
-    else if(screen_x>=NUM_COLS)
-      screen_y++;
-    screen_x %= NUM_COLS;
-  }
-  move_curser();
+    	//screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+
+    	//Move the screen up if the next character reach bottom of the screen row
+    	if(screen_y>=NUM_ROWS-1&&screen_x>=NUM_COLS)
+      		move_screen_up();
+    	else if(screen_x>=NUM_COLS)
+      		screen_y++;
+    	screen_x %= NUM_COLS;
+  	}
+  	move_curser();
 }
 
+/*
+* void move_screen_up(){
+*   Inputs: none
+*   Return Value: none
+*	Function: This will shift the whole screen up and make last line blank
+*/
 void
-move_screen_up(void){
+move_screen_up() {
 	int x,y;
+
+	//Shift the screen up
 	for(y=1;y<NUM_ROWS;y++){
 		for(x=0;x<NUM_COLS;x++){
 			*(uint8_t *)(VIDEO + ((NUM_COLS*(y-1) + x) << 1)) = *(uint8_t *)(VIDEO + ((NUM_COLS*y + x) << 1));
         	*(uint8_t *)(VIDEO + ((NUM_COLS*(y-1) + x) << 1) + 1) = ATTRIB;
 		}
 	}
-	for(x=0;x<NUM_COLS;x++){
+
+	//Make the last line on the screen to be blanks
+	for(x=0;x<NUM_COLS;x++) {
 		*(uint8_t *)(VIDEO + ((NUM_COLS*(NUM_ROWS-1) + x) << 1)) = ' ';
    	  	*(uint8_t *)(VIDEO + ((NUM_COLS*(NUM_ROWS-1) + x) << 1) + 1) = ATTRIB;
    	}
@@ -598,8 +615,7 @@ test_interrupts(void)
 *	Function: Set screen_y to value
 */
 void 
-set_coordY(int value)
-{
+set_coordY(int value) {
 	screen_y = value;
 	return;
 }
@@ -611,8 +627,7 @@ set_coordY(int value)
 *	Function: Set screen_x to value
 */
 void 
-set_coordX(int value)
-{
+set_coordX(int value) {
 	screen_x = value;
 	return;
 }
@@ -624,8 +639,7 @@ set_coordX(int value)
 *	Function: Retrieve the y coordinate
 */
 int 
-get_coordY()
-{
+get_coordY() {
 	return screen_y;
 }
 
@@ -636,22 +650,31 @@ get_coordY()
 *	Function: Retrieve the X coordinate
 */
 int 
-get_coordX()
-{
+get_coordX() {
 	return screen_x;
 }
 
+/*
+* void move_curser()
+*   Inputs: none
+*   Return Value: none
+*	Function: Will update the cursor on the screen base on the location of the screen.
+*/
 void
-move_curser(){
-  uint16_t location = (screen_y*NUM_COLS)+screen_x;
-  if(location>=NUM_COLS*NUM_ROWS)
-    location = NUM_COLS*NUM_ROWS - 1;
+move_curser() {
+	//Calculate the position on the screen
+  uint16_t location = screen_x + (screen_y*NUM_COLS);
+
+  if(location >= NUM_COLS*NUM_ROWS)
+  	location = NUM_COLS*NUM_ROWS - 1;
+
   //High port to index VGA registers
-  outb(0x0E,0x3D4);
-  outb((location&0xFF00)>>8,0x3D5);
+  outb(CURSOR_HIGH_ADDR, INDEX_REG_PORT);
+  outb((location & HBIT_Mask)>>BYTE_OFFSET,INDEX_REG_RW_PORT);
+
   //Low port to index VGA registers
-  outb(0x0F,0x3D4);
-  outb(location&0x00FF,0x3D5);
+  outb(CURSOR_LOW_ADDR, INDEX_REG_PORT);
+  outb(location & LBIT_Mask, INDEX_REG_RW_PORT);
 }
 
 

@@ -15,7 +15,7 @@ static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
 static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
 volatile uint8_t buffer_key[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
-volatile uint8_t buffer_index = 0;						//Index of buffer's last added key
+volatile uint8_t buffer_index = 0;						//Index of after buffer's added key
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -34,7 +34,7 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 		'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
 		//pgup, - , left, center, right, +, end, down, pgdn, ins, del, /, enter, F11
 		'\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
-		//F12, Remaining/repeating undefined keys (>=92)
+		//F12, Remaining/repeating undefined keys (>=87)
 		'\0', '\0' 
 	},
 	// shift pressed, no caps pressed (1), PRESS_SHIFT_ONLY
@@ -120,6 +120,7 @@ keyboard_int_handler(){
 		}
 	}
 
+	//Perform a certain function depending on the key retrieved
 	switch(key){
 		case CAPS_DOWN:
 			press_caps();
@@ -190,8 +191,8 @@ press_caps(){
 			break;		
 	}
 
-
-	/*if(keyboard_mode == PRESS_NOTHING)
+	/* Old one
+	if(keyboard_mode == PRESS_NOTHING)
 		keyboard_mode = PRESS_CAP_ONLY;
 	else if( keyboard_mode == PRESS_SHIFT_ONLY )
 		keyboard_mode = PRESS_SHIFT_CAP;
@@ -199,7 +200,7 @@ press_caps(){
 		keyboard_mode = PRESS_SHIFT_ONLY;
 	else
 		keyboard_mode = PRESS_NOTHING;
-		*/
+	*/
 }
 
 /*
@@ -207,21 +208,16 @@ press_caps(){
 *   Inputs: none
 *
 *   Return Value: NOTHING
-*	Function: Will shift the screen x and y coordinate down one line and clear buffer
+*	Function: Set the next key on the buffer to be null for read_keyboard.
+*	Reset the buffer index and print out the character new line to shift to the next line.
 */
 void
 press_enter() {
-
-
-  //y = get_coordY();
-  //Move to the next line for the coordinate
-  //set_coordY(y+1);
-  //set_coordX(X_ZERO);
-
-  //Clear the buffer
+  //Set key to null to terminate at null for other function anc reset buffer index
   buffer_key[buffer_index] = KEY_NULL;
   initialize_clear_buffer();
-  putc('\n');
+  //Move the cursor to the next line and the screen positions
+  putc(NEW_LINE);
 
 }
 
@@ -272,28 +268,34 @@ press_bskp() {
     int x; 
     int y;
 
+    //Move back to the last key and make it a null key 
     buffer_key[buffer_index-1] = KEY_NULL;
     buffer_index = buffer_index - 1;
 
     x = get_coordX();
     y = get_coordY();
-    if(y>1||x>0){
-      *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1)) = ' ';
-          *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1) + 1) = ATTRIB;
-      }
+
+    if( y>1|| x>0 ) 
+    {
+    	//Move back one space on video memory display
+      	*(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1)) = ' ';
+        *(uint8_t *)(VIDEO + ((NUM_COLS*y + x-1) << 1) + 1) = ATTRIB;
+    }
+
     if( x != 0)
-      set_coordX(x-1);
+     	set_coordX(x-1);
     else
     {	
-      if(y>0)
+      	if(y>0)
         //Move back one row
         set_coordY(y-1);
 
-      //NUM_COLS was already defined for us in lib.c
-      //Move back one col
-      set_coordX(NUM_COLS-1);
+      	//NUM_COLS was already defined for us in lib.c
+     	//Move back one col
+      	set_coordX(NUM_COLS-1);
     }
   }
+  //update curser after changing the position
   move_curser();
 }
 
@@ -309,11 +311,11 @@ press_other_key(uint8_t key){
 
 	uint8_t actual_key = 0;
   
-  //for testing
-  static uint32_t mul2 = 2;
+  	//for testing
+  	static uint32_t mul2 = 2;
 
 	//If key is not in the keyboard array than it does not need to be consider
-	if(KEYBOARD_NUM_KEYS <= key)
+	if(NUM_ACTUAL_MAP_KEYS <= key)
 		return;
 
 	//Get the key that is being map to scancode_array
@@ -334,6 +336,7 @@ press_other_key(uint8_t key){
 		}
 		else
 		{
+			//The control key is being press with another key
 			if( (actual_key == 'l') || (actual_key == 'L') )
 			{
 				//clear screen video memory
@@ -342,21 +345,23 @@ press_other_key(uint8_t key){
 				//Set the Coordinate of x and y to be zero for the screen
 				set_coordY(Y_ZERO);
 				set_coordX(X_ZERO);
-        move_curser();
+				//Update curser
+        		move_curser();
 			}
       
-      //for testing
-      if( (actual_key == 'w') || (actual_key == 'W') )
+      		//for testing
+      		if( (actual_key == 'w') || (actual_key == 'W') )
 			{
 				mul2 *= 2;
-        rtc_write(&mul2,4);
+       			rtc_write(&mul2,4);
 			}
-      //for testing
-      if( (actual_key == 'S') || (actual_key == 's') )
+
+     		 //for testing
+      		if( (actual_key == 'S') || (actual_key == 's') )
 			{
-        if(mul2>2)
-          mul2 /= 2;
-        rtc_write(&mul2,4);
+        		if(mul2>2)
+         		mul2 /= 2;
+        		rtc_write(&mul2,4);
 			}
 		}
 	}
@@ -376,7 +381,8 @@ initialize_clear_buffer() {
 
   //Set the buffer index to the beginning
   buffer_index = 0;
-/*
+
+  /*
   for(i = 0; i < KEYBOARD_NUM_KEYS; i++)
   {
     //Set the whole buffer to null key 
@@ -419,25 +425,42 @@ set_alt_flag(uint8_t key) {
 		alt_flag = PRESS_NOTHING;
 }
 
-
-//Return data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
-//The line returned should include the line feed character.
+/*
+* int32_t read_keyboard(void * buff, int32_t nbytes) 
+*   Inputs: void * buff: the buffer that needs to be copy to, 
+*			int32_t nbytes: number of bytes to copy
+*   Return Value: The number of keys copied
+*	Function: Copy data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
+*   Afterward return the number of keys copied.
+*/
 int32_t 
-read_keyboard(void * buff, int32_t nbytes){
-  int i;
-  for(i=0;i<KEYBOARD_NUM_KEYS;i++){
-    if(i>=nbytes||buffer_key[i]==KEY_NULL)
-      return i;
-    *(unsigned char*)(buff+i) = buffer_key[i];
-  }
-  return 0;
+read_keyboard(void * buff, int32_t nbytes) {
+  	int i;
+
+  	for(i=0; i<KEYBOARD_NUM_KEYS; i++) {
+  		//Only copy the key if it is not null or up to nbytes
+    	if( i>=nbytes || buffer_key[i] == KEY_NULL)
+      		return i;
+      	//Copy the key from buffer to the buff
+    	*(unsigned char*)(buff+i) = buffer_key[i];
+ 	}
+
+  	return 0;
 }
 
+/*
+* int32_t write_keyboard(void * buff, int32_t nbytes)
+*   Inputs: void * buff: the buffer that will be print to the terminal
+*			int32_t nbytes: number of bytes to print to terminal
+*   Return Value: The number of keys printed
+*	Function: Keep printing the keys in the buff until the nbytes is satisfied
+*   Afterward return the number of keys printed.
+*/
 int32_t 
 write_keyboard(void * buff, int32_t nbytes){
   int i;
-  for(i=0;i<nbytes;i++){
-    putc(*(unsigned char*)(buff+i));
+  for(i=0; i<nbytes; i++) {
+  	putc(*(unsigned char*)(buff+i));
   }
   return i;
 }
