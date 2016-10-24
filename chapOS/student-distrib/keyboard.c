@@ -5,6 +5,9 @@
 #include "keyboard.h"
 #include "lib.h"
 #include "i8259.h"
+
+//testing
+#include "rtc.h"
  
 // See scancode_array, value correspond to scancode_array's of either (0,1,2,3)
 static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
@@ -305,6 +308,9 @@ void
 press_other_key(uint8_t key){
 
 	uint8_t actual_key = 0;
+  
+  //for testing
+  static uint32_t mul2 = 2;
 
 	//If key is not in the keyboard array than it does not need to be consider
 	if(KEYBOARD_NUM_KEYS <= key)
@@ -337,6 +343,20 @@ press_other_key(uint8_t key){
 				set_coordY(Y_ZERO);
 				set_coordX(X_ZERO);
         move_curser();
+			}
+      
+      //for testing
+      if( (actual_key == 'w') || (actual_key == 'W') )
+			{
+				mul2 *= 2;
+        rtc_write(&mul2,4);
+			}
+      //for testing
+      if( (actual_key == 'S') || (actual_key == 's') )
+			{
+        if(mul2>2)
+          mul2 /= 2;
+        rtc_write(&mul2,4);
 			}
 		}
 	}

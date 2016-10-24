@@ -62,7 +62,11 @@ void rtc_irq_handler(){
   send_eoi(RTC_IRQ);
   
   rtc_interrupt_occurred = 1;
-
+  
+  //for testing
+  char sssss = '1';
+  write_keyboard(&sssss,1);
+  
   //re-enable irq line
   enable_irq(RTC_IRQ);
   //sti();
