@@ -45,7 +45,7 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
         return -1;
     }
 
-    strncpy((int8_t*)dentry->file_name, (int8_t)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
+    strncpy((int8_t*)dentry->file_name, (int8_t*)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
     dentry->file_type = boot_block_ptr->dir_entries[index].file_type;
     dentry->inode_num = boot_block_ptr->dir_entries[index].inode_num;
 
