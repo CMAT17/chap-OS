@@ -362,6 +362,7 @@ press_other_key(uint8_t key){
         rtc_write(&mul2,4);
       }
       if((actual_key == '4')){
+        clear();
         rtc_open();
         //rtc_write(&mul2,4);
       }
