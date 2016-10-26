@@ -19,7 +19,7 @@
 static uint8_t is_open = 0;
 
 /* used for synchronization */
-volatile uint8_t rtc_interrupt_occurred;
+volatile uint8_t rtc_interrupt_occurred = 0;
 
 //static uint8_t rtc_counter = 0;
 
@@ -66,21 +66,22 @@ void rtc_irq_handler(){
   // test_interrupts as a check
   //test_interrupts();
 
+  if(is_open == 1)
+    rtc_interrupt_occurred = 1;
+  
   //end of interrupt done
   send_eoi(RTC_IRQ);
   
   
-  
   //for testing
-  if(is_open == 1){
-    char sssss = '1';
-    write_keyboard(&sssss,1);
-  }
+  //if(is_open == 1){
+    //char sssss = '1';
+    //write_keyboard(&sssss,1);
+  //}
   
   //re-enable irq line
   cli();
   enable_irq(RTC_IRQ);
-  rtc_interrupt_occurred = 1;
   sti();
   
 }
@@ -93,10 +94,11 @@ void rtc_irq_handler(){
  * RETURN VALUE: 0 only after an interrupt has occurred
  */
 int32_t rtc_read(){
-  //rtc_interrupt_occurred = 0;
+  rtc_interrupt_occurred = 0;
   while(rtc_interrupt_occurred==0){
     // spin
   }
+  
   return 0;
 }
 
@@ -199,6 +201,9 @@ int32_t rtc_open(){
   else{
     enable_irq(RTC_IRQ);
   }*/
+  //cli();
+  //enable_irq(RTC_IRQ);
+  //sti();
   is_open = 1;
   return 0;
 }
@@ -210,7 +215,9 @@ int32_t rtc_open(){
  */
 int32_t rtc_close(){
   //Mask own irq line to prevent being interrupted by itself
+  //cli();
   //disable_irq(RTC_IRQ);
+  //sti();
   is_open = 0;
   return 0;
 }

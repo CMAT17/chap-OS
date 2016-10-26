@@ -392,7 +392,7 @@ press_other_key(uint8_t key){
         for(i=0;i<buffer_index&&my_test_buf[i]!=KEY_NULL;i++)
           putc(my_test_buf[i]);
         
-      }
+      }/* While loop inside interrupt is crashing the system
       if((actual_key == '7')){
         clear();
         set_coordY(Y_ZERO);
@@ -404,7 +404,7 @@ press_other_key(uint8_t key){
         putc(NEW_LINE);
         rtc_read();
         write_keyboard(&response_text,22);
-      }
+      }*/
     }
   }
 

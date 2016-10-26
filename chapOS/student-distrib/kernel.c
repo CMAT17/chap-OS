@@ -177,6 +177,23 @@ entry (unsigned long magic, unsigned long addr)
 	sti();
 	
   initialize_paging();
+  
+//-----------------------------Sandwich testing--------------------------------
+
+/*
+long testtt=0;
+for(testtt=0;testtt<100000000;testtt++){
+	
+}*/
+printf("Start RTC read test\n");
+while(1){
+  rtc_read();
+  printf("1");
+}
+printf("done rtc_read()\n");
+
+//---------------------------End Sandwich testing------------------------------
+  
   //testing page faults
   /*
   int* test;
