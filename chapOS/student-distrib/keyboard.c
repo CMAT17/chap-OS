@@ -16,6 +16,7 @@ static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
 volatile uint8_t buffer_key[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
 volatile uint8_t buffer_index = 0;						//Index of after buffer's added key
+static volatile uint8_t return_flag;
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -221,7 +222,7 @@ press_enter() {
   initialize_clear_buffer();
   //Move the cursor to the next line and the screen positions
   putc(NEW_LINE);
-
+  return_flag = 1;
 }
 
 /*
@@ -478,7 +479,8 @@ set_alt_flag(uint8_t key) {
 int32_t 
 read_keyboard(void * buff, int32_t nbytes) {
   int i;
-
+  return_flag = 0;
+  while(!return_flag);
   for(i=0; i<KEYBOARD_NUM_KEYS; i++) {
     //Only copy the key if it is not null or up to nbytes
     if(i>=nbytes)
@@ -487,7 +489,7 @@ read_keyboard(void * buff, int32_t nbytes) {
     *(unsigned char*)(buff+i) = buffer_key[i];
     if(buffer_key[i] == KEY_NULL)
       return i;
-}
+  }
 
   return 0;
 }
@@ -503,9 +505,15 @@ read_keyboard(void * buff, int32_t nbytes) {
 int32_t 
 write_keyboard(void * buff, int32_t nbytes){
   int i;
-  for(i=0; i<nbytes; i++) {
-  	putc(*(unsigned char*)(buff+i));
+  for(i=0; i<nbytes; i++){
+    buffer_key[i] = *(unsigned char*)(buff+i);
   }
+  buffer_index = i;
+  if(i<KEYBOARD_NUM_KEYS-1)
+    buffer_key[i] = KEY_NULL;
+  /*for(i=0; i<nbytes; i++){
+    putc(*(unsigned char*)(buff+i));
+  }*/
   return i;
 }
 

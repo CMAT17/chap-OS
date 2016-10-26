@@ -185,12 +185,19 @@ long testtt=0;
 for(testtt=0;testtt<100000000;testtt++){
 	
 }*/
+char testChar[50];
+char writeArray[50] = "This is written message";
+printf("Start keyboard read test\n");
+write_keyboard(writeArray,50);
+read_keyboard(testChar,50);
+printf("%s\n",testChar);
+
 printf("Start RTC read test\n");
 while(1){
   rtc_read();
   printf("1");
 }
-printf("done rtc_read()\n");
+//printf("done rtc_read()\n");
 
 //---------------------------End Sandwich testing------------------------------
   
