@@ -27,10 +27,10 @@ execute(const uint8_t* command) {
 
 
 	int i = 0;
-	int name_starting_point = 0;
-	int name_ending_point = 0;
-	int arg_starting_point = 0;
-	int arg_ending_point = 0;
+	int name_starting_point = -1;
+	int name_ending_point = -1;
+	int arg_starting_point = -1;
+	int arg_ending_point = -1;
 	int8_t file_name_command[MAX_NAME_SIZE];
 	int8_t arg_command[MAX_ARG_SIZE];
 	int8_t bitmask;
@@ -45,7 +45,7 @@ execute(const uint8_t* command) {
 	//Traverse through the command for the name and argument
 	while(command[i] != NULL_CHAR)
 	{
-		if( name_starting_point == 0)
+		if( name_starting_point == -1)
 		{
 			if( command[i] == ' ')
 			{
@@ -56,7 +56,7 @@ execute(const uint8_t* command) {
 				name_starting_point = i;
 			}
 		} 
-		else if( name_ending_point == 0)
+		else if( name_ending_point == -1)
 		{
 			if( command[i] != ' ')
 			{
@@ -70,7 +70,7 @@ execute(const uint8_t* command) {
 				file_name_command[i] = NULL_CHAR;
 			}
 		}
-		else if( arg_starting_point == 0)
+		else if( arg_starting_point == -1)
 		{
 			if( command[i] == ' ')
 			{
@@ -81,7 +81,7 @@ execute(const uint8_t* command) {
 				arg_starting_point = i;
 			}
 		} 
-		else if( arg_ending_point == 0)
+		else if( arg_ending_point == -1)
 		{
 			if( command[i] != ' ')
 			{
