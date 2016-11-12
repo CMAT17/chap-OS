@@ -11,6 +11,10 @@
 #include "file_sys_module.h"
 
 //define magic numbers
+#define MAX_ARG_SIZE	100
+#define MAX_NAME_SIZE	10
+#define NULL_CHAR		'\0'
+#define MAX_OPEN_FILE	8
 //extern
 int32_t halt(uint8_t status);
 int32_t execute(const uint8_t* command);
