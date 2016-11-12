@@ -32,6 +32,15 @@ execute(const uint8_t* command) {
 int32_t 
 read(int32_t fd, void* buf, int32_t nbytes) {
 
+	sti();
+
+	//Need to set up PCB
+
+	//Check bounds
+	if( fd > 7 || fd < 0)
+		return -1;
+	if( buf == NULL )
+		retun -1;
 }
 
 int32_t 
@@ -73,5 +82,8 @@ sigreturn (void) {
 /*
 Hey Herman, 
 	This is what you need to know:
-	
+	In the google doc there are some information on 3.3.
+	Aaron worked on file system and pcb.
+	Phong started read and write. 
+	Meet tomorrow 10 am at grainger
 */
