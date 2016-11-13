@@ -19,14 +19,18 @@
 #define ASCII_F         0x46
 #define ASCII_ELF       0x7F454C46
 
-#define MAX_ARG_SIZE	100
-#define MAX_NAME_SIZE	10
-#define NULL_CHAR		'\0'
-#define MAX_OPEN_FILE	8
-#define MAX_FILE_SIZE 32
-#define NUM_OPS			4
+#define MAX_ARG_SIZE	    100
+#define MAX_NAME_SIZE	    10
+#define NULL_CHAR		    '\0'
+#define NUM_OPS	            4
+#define PCB_MASK            0xFFFFE000
+#define MAX_PROCESSES       6
+#define PAGE_8MB            0x800000  
+#define STACK_8KB           0x2000
+#define PROG_IMAGE_VADDR    0x08048000      
 
-#define FLAG_ACTIVE		0x0001
+#define FLAG_ACTIVE         0x0001
+
 
 //extern
 int32_t halt(uint8_t status);
@@ -41,6 +45,7 @@ int32_t vidmap(uint8_t** screen_start);
 /* Following two are for extra credit and later*/
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
+int32_t gen_new_proc_id(void);
 
 /*
 typedef struct{
