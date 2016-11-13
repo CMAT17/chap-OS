@@ -193,7 +193,7 @@ int32_t rtc_write(int32_t fd, const void* freq, int32_t nbytes){
  * OUTPUT: none
  * RETURN VALUE: 0 - if successful
  */
-int32_t rtc_open(){
+int32_t rtc_open(const uint8_t* filename){
   /*if(!is_open){
     rtc_init();
     is_open = 1;
@@ -213,7 +213,7 @@ int32_t rtc_open(){
  * OUTPUT: none
  * RETURN VALUE: 0 if successful
  */
-int32_t rtc_close(){
+int32_t rtc_close(int32_t fd){
   //Mask own irq line to prevent being interrupted by itself
   //cli();
   //disable_irq(RTC_IRQ);
