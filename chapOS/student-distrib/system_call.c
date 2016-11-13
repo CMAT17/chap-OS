@@ -39,8 +39,11 @@ execute(const uint8_t* command) {
 	int arg_ending_point = -1;
 	int8_t file_name_command[MAX_NAME_SIZE];
 	int8_t arg_command[MAX_ARG_SIZE];
+    int8_t f_content_buf[MIN_READ_ELF_SIZE];
 	int8_t bitmask;
-
+    dentry_t f_dentry;
+    int32_t f_content = 0;
+    uint32_t entry_point;
 	// The command does not exist
 	if( command == NULL )
 		return -1;
@@ -97,7 +100,7 @@ execute(const uint8_t* command) {
 			else
 			{
 				arg_ending_point = i;
-				arg_command[i-arg_starting_point] = NULL_CHAR;
+				arg_command[i-arg_starting_point] = NULL_CHAR; 
 				printf("See arg Space");
 				break;
 			}
@@ -110,11 +113,34 @@ execute(const uint8_t* command) {
 
 	printf("The name of command:%s\n", file_name_command );
 	printf("The arg of command:%s\n ", arg_command );
-	//Read the 4 bytes from the file to the buffer?
-	//if( read_data(inode offset, buff, length))
 
-	//Check if there is an executable images?
-	//use strncmp	
+    //Make sure that file exists
+    if(read_dentry_by_name((uint8_t *) file_name_command, & f_dentry))
+    {
+        printf ("Shits done fucked up\n");
+        return -1;
+    }
+
+    //obtain the first 4 bytes of the file to check if file is executable
+    read_data(f_dentry.inode_num, 0, f_content_buf, MIN_READ_ELF_SIZE);
+    
+    //Append the file content buffer together to compare with the ELF char
+    for(i = 0; i<MIN_READ_ELF_SIZE-1; i++){
+        f_content |= f_content_buf[i];
+        f_content = f_content<<ASCII_CHAR_SIZE;
+    }
+
+    //Append the last byte outside of loop to avoid loss of data
+    f_content |= f_content_buf[MIN_READ_ELF_SIZE-1];
+    
+    if(f_content != ASCII_ELF){
+        printf("what the fuck man \n");
+        return -1;
+    }
+
+    //obtain entry point
+    entry_point = (uint32_t) f_content;
+
 
 	bitmask = 0x80;
 

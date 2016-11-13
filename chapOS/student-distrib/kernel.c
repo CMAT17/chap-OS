@@ -209,15 +209,16 @@ entry (unsigned long magic, unsigned long addr)
 
   printf("Start Directory Read Test\n");
   for(i = 0; i<20; i++){
-  	printf("%d\n",dir_read(fd, testbuf, nbytes));
+  	dir_read(fd, testbuf, nbytes);
   	printf("%s\n",testbuf);
   }
   printf("Start File Read Test \n");
-  read_dentry_by_name("frame0.txt", &dentry);
-  read_data(dentry.inode_num, 100, testfcontents, 100);
+  read_dentry_by_name("shell", &dentry);
+  printf("shell\n");
+  read_data(dentry.inode_num, 0, testfcontents, 100);
   printf("%s\n", testfcontents);
 //---------------------------End Sandwich testing------------------------------
-  uint8_t testTXT[100] = "     ThisIsCMD This is Args";
+  uint8_t testTXT[100] = "     shell       This is Args";
   execute(testTXT);
   printf("Done test CMD\n");
   //testing page faults

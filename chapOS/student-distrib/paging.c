@@ -11,6 +11,8 @@ uint32_t page_dir[PAGE_DIRECTORY_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 //The page table stores its entries
 uint32_t page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 
+uint8_t num_process;
+
 //initialize_paging function
 //This function initialize the page directory and page table.
 //The first 4MB will be using 4KB paging with the first page directory. 
@@ -18,6 +20,9 @@ uint32_t page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 //Return: none
 void initialize_paging(void){
   int i;  //Iterator
+  
+  //Reset the number of process to be 0
+  num_process = 0;
   
   //Initialize the first page directory to point to the first page table
   page_dir[0] = ((uint32_t)page_table & HI_PTE_MASK)|PD_ENABLE_ENTRY;
@@ -43,6 +48,15 @@ void initialize_paging(void){
   page_dir[1] |= INIT_4MB_KERNEL; //This Starts at 4MB (kernel)
   
   //Set control registers
+  paging_setCR();
+  return;
+}
+
+void new4MB(void){
+  if(num_process == 0)
+    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+  else if(num_process == 1)
+    page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
   paging_setCR();
   return;
 }

@@ -11,6 +11,7 @@
 #define MAX_DENTRY_NUM      63
 #define MAX_DATA_BLOCK_NUM  1023
 #define DATA_BLOCK_SIZE     4096
+#define MIN_READ_ELF_SIZE   4
 
 #define MAX_ARG_SIZE    100
 #define MAX_NAME_SIZE   10
