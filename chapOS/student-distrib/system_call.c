@@ -37,7 +37,7 @@ execute(const uint8_t* command) {
 	int8_t bitmask;
     dentry_t f_dentry;
     int32_t f_content = 0;
-    uint32_t = entry_point;
+    uint32_t entry_point;
 	// The command does not exist
 	if( command == NULL )
 		return -1;
