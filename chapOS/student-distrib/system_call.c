@@ -42,7 +42,7 @@ execute(const uint8_t* command) {
 	int arg_ending_point = -1;
 	int8_t file_name_command[MAX_NAME_SIZE];
 	int8_t arg_command[MAX_ARG_SIZE];
-    int8_t f_content_buf[MIN_READ_ELF_SIZE];
+    uint8_t f_content_buf[MIN_READ_ELF_SIZE];
     dentry_t f_dentry;
     int32_t f_content = 0;
     uint32_t entry_point;
@@ -152,7 +152,7 @@ execute(const uint8_t* command) {
         return -1;
     }
 
-    proc_PCB = PAGE_8MB-STACK_8KB*(new_proc_id + 1);
+    proc_PCB = (pcb_t*)(PAGE_8MB-STACK_8KB*(new_proc_id + 1));
     proc_PCB->proc_num = new_proc_id;
 
     //obtain entry point
@@ -163,7 +163,7 @@ execute(const uint8_t* command) {
 
     //Load file into virtual memory
     uint32_t len = get_file_size(f_dentry.inode_num);
-    printf("%d\n", read_data(f_dentry.inode_num, 0, PROG_IMAGE_VADDR, len));
+    printf("%d\n", read_data(f_dentry.inode_num, 0, (uint8_t*)PROG_IMAGE_VADDR, len));
 
     //PCB s
 
