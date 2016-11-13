@@ -75,11 +75,11 @@ void set_alt_flag(uint8_t key);
 
 //Function: Copy data from one line that has been terminated by press Enter, or as much as fits in the buffer from one such line.
 //Afterward return the number of keys copied.
-int32_t read_keyboard(void * buff, int32_t nbytes);
+int32_t keyboard_read(int32_t fd, void* buf, int32_t nbytes);
 
 //Function: Keep printing the keys in the buff until the nbytes is satisfied
 //Afterward return the number of keys printed.
-int32_t write_keyboard(void * buff, int32_t nbytes);
+int32_t keyboard_write(int32_t fd, const void* buff, int32_t nbytes);
 
 //Function: Close the keyboard
 //Afterward no return value.
