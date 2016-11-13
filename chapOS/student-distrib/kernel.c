@@ -186,19 +186,28 @@ entry (unsigned long magic, unsigned long addr)
     
   }*/
   char testChar[50];
+
+  char testbuf[33];
+  int32_t fd = 0;
+  int32_t nbytes = 0;
+  int32_t i; 
   //char writeArray[50] = "This is written message";
   printf("Start keyboard read test. Please type to fill in the buffer\n");
   //write_keyboard(writeArray,50);
   read_keyboard(testChar,50);
   printf("The message in the buffer is \"");
   printf("%s\"\n",testChar);
-
+  /*
   printf("Start RTC read test\n");
   while(1){
     rtc_read();
     printf("1");
   }
+  */
   //printf("done rtc_read()\n");
+  printf("Start Directory Read test");
+  for(i = 0; i<7; i++)
+  	dir_read(fd, testbuf, nbytes);
 
 //---------------------------End Sandwich testing------------------------------
   

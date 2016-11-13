@@ -38,6 +38,17 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
 int32_t file_open(const uint8_t* file_name);
 int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t file_sys_close(int32_t fd);
-int32_t file_sys_open();
+int32_t file_sys_open(const uint8_t * filename);
+
+int32_t file_open(const uint8_t * filename);
+int32_t file_close(int32_t fd);
+int32_t file_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t file_read(int32_t fd, void* buf, int32_t nbytes);
+
+int32_t dir_open(const uint8_t * filename);
+int32_t dir_close(int32_t fd);
+int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes);
+int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
+
 
 #endif
