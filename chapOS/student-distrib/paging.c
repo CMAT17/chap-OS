@@ -52,6 +52,11 @@ void initialize_paging(void){
   return;
 }
 
+//new4MB_page function
+//This function will create a new 4MB page for a new process
+//It will map to phys mem at 8MB, 12MB, 16MB, ...
+//Input: none
+//Output: none
 int32_t new4MB_page(void){
   if(num_process == 0){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
@@ -68,6 +73,11 @@ int32_t new4MB_page(void){
   return 0;
 }
 
+//rm4MB_page function
+//This function will destroy one 4MB page for current process
+//It will map to phys mem at 8MB, 12MB, 16MB, ...
+//Input: none
+//Output: none
 int32_t rm4MB_page(void){
   if(num_process == 2){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
