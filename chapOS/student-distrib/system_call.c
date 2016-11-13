@@ -2,6 +2,8 @@
 #include "system_call.h"
 #include "file_sys_module.h"
 
+static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0,0};
+
 int32_t 
 halt(uint8_t status) {
 	return 0;
@@ -95,7 +97,7 @@ execute(const uint8_t* command) {
 			{
 				arg_ending_point = i;
 				arg_command[i-arg_starting_point] = NULL_CHAR; 
-				printf("See arg Space");
+				printf("See arg Space\n");
 				break;
 			}
 		}
@@ -105,8 +107,8 @@ execute(const uint8_t* command) {
 
 	}
 
-	printf("The name of command:%s\n", file_name_command );
-	printf("The arg of command:%s\n ", arg_command );
+	printf("The name of command: %s\n", file_name_command );
+	printf("The arg of command: %s\n ", arg_command );
 
     //Make sure that file exists
     if(read_dentry_by_name((uint8_t *) file_name_command, & f_dentry))
@@ -128,13 +130,15 @@ execute(const uint8_t* command) {
     f_content |= f_content_buf[MIN_READ_ELF_SIZE-1];
     
     if(f_content != ASCII_ELF){
-        printf("what the fuck man \n");
+        printf("What the fuck man \n");
         return -1;
     }
 
+    //Begin populating the PCB
+    pcb_t * 
+
     //obtain entry point
     entry_point = (uint32_t) f_content;
-
 
 	bitmask = 0x80;
 
@@ -197,7 +201,36 @@ sigreturn (void) {
 	return -1;
 }
 
+int32_t
+gen_new_proc_id(void)
+{
+    int8_t i, proc_id;
+    int8_t avail_process_flag = 0;
 
+
+    for(i=0; i<MAX_PROCESSES;i++)
+    {
+        if(proc_id_flags[i]==0)
+        {
+            proc_id_flags[i] = 1;
+            avail_process_flag = 1;
+            proc_id = i;
+        }
+    }
+    return (avail_process_flag == 1 ? proc_id:-1)
+}
+
+pcb_t *
+get_pcb_ptr()
+{
+    pcb_t * pcb_ptr;
+    asm("andl %%esp, %%eax \n"
+        :"=a"(pcb_ptr)
+        :"a"(PCB_MASK)
+        :"cc"
+        );
+    return pcb_ptr;
+}
 /*
 Hey Herman, 
 	This is what you need to know:
