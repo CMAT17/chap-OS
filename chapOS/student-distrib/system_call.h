@@ -29,8 +29,8 @@
 #define STACK_8KB           0x2000
 #define PROG_IMAGE_VADDR    0x08048000      
 
-#define FLAG_ACTIVE         0x0001
-
+#define FLAG_ACTIVE		0x00000001
+#define FLAG_INACTIVE	0x00000000
 
 //extern
 int32_t halt(uint8_t status);
