@@ -5,13 +5,17 @@
 #include "x86_desc.h"
 
 //define all the magic numbers
-#define PAGE_DIRECTORY_SIZE 1024
-#define PAGE_TABLE_SIZE 1024
-#define PAGE_ALIGN 4096
-#define HI_PTE_MASK 0xFFFFF000
-#define PD_ENABLE_ENTRY 0x00000003
-#define NOT_PRESENT 2
-#define INIT_4MB_KERNEL 0x400083
+#define PAGE_DIRECTORY_SIZE   1024
+#define PAGE_TABLE_SIZE       1024
+#define PAGE_ALIGN            4096
+#define HI_PTE_MASK           0xFFFFF000
+#define PD_ENABLE_ENTRY       0x00000003
+#define PD_SET_4MB            0x00000080
+#define NOT_PRESENT           2
+#define INIT_4MB_KERNEL       0x400083
+#define PDE_USER_PROG         0x20
+#define PDE_8MB_PHY           0x00800000
+#define PDE_12MB_PHY          0x00C00000
 
 //Video memory location to be map to page table (first page directory)
 #ifndef VIDEO
@@ -24,5 +28,8 @@ void initialize_paging(void);
 
 //Set controll registers for paging
 void paging_setCR(void);
+
+//Enable new 4MB page for new program
+void new4MB(void);
 
 #endif
