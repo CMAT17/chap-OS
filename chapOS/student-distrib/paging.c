@@ -32,12 +32,12 @@ void initialize_paging(void){
   for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     //This will clear all bits as shown above, but wants to turn on R/W bit
     page_dir[i] = NOT_PRESENT;
-    //page_table[i] = page_table[i-1]+PAGE_ALIGN;
+    page_table[i] = page_table[i-1]+PAGE_ALIGN;
   }
   
   //Set the R/W of the page table to be 1
   for(i=0;i<PAGE_DIRECTORY_SIZE;i++){
-    page_table[i] = 0;//page_table[i] | NOT_PRESENT; //Enable R/W for page table
+    page_table[i] = page_table[i] | NOT_PRESENT; //Enable R/W for page table
   }
   
   page_table[HI_VIDEO] |= PD_ENABLE_ENTRY;//1;     //Set the video memory page table to be present
