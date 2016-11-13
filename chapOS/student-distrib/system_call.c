@@ -2,6 +2,12 @@
 #include "system_call.h"
 #include "file_sys_module.h"
 
+uint32_t rtc__ops_tbl[NUM_OPS] = { (uint32_t)(rtc_open), (uint32_t)(rtc_read), (uint32_t)(rtc_write), (uint32_t)(rtc_close)};
+uint32_t file_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
+uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(read_keyboard),(uint32_t)(write_keyboard),(uint32_t)(close_keyboard)};
+
+
+
 int32_t 
 halt(uint8_t status) {
 

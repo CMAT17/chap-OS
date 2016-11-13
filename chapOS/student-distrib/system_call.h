@@ -17,8 +17,8 @@
 #define MAX_NAME_SIZE	10
 #define NULL_CHAR		'\0'
 #define MAX_OPEN_FILE	8
-
 #define MAX_FILE_SIZE 32
+#define NUM_OPS			4
 
 //extern
 int32_t halt(uint8_t status);

@@ -81,6 +81,10 @@ int32_t read_keyboard(void * buff, int32_t nbytes);
 //Afterward return the number of keys printed.
 int32_t write_keyboard(void * buff, int32_t nbytes);
 
+//Function: Close the keyboard
+//Afterward no return value.
+void close_keyboard();
+
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
 int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t terminal_open(const uint8_t* filename);
