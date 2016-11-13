@@ -218,9 +218,9 @@ entry (unsigned long magic, unsigned long addr)
   read_data(dentry.inode_num, 0, testfcontents, 100);
   printf("%s\n", testfcontents);
 //---------------------------End Sandwich testing------------------------------
-  uint8_t testTXT[100] = "     shell       This is Args";
-  execute(testTXT);
-  printf("Done test CMD\n");
+  //uint8_t testTXT[100] = "     shell       This is Args";
+  //execute(testTXT);
+  //printf("Done test CMD\n");
   //testing page faults
   /*
   int* test;
@@ -231,6 +231,20 @@ entry (unsigned long magic, unsigned long addr)
   */
   //testing div by 0
   //int a = 3/0;
+  
+  int* dummy = 0x08048000;
+  new4MB_page();
+  *dummy = 555;
+  printf("%d\n",*dummy);
+  new4MB_page();
+  *dummy = 666;
+  printf("%d\n",*dummy);
+  new4MB_page();
+  printf("%d\n",*dummy);
+  rm4MB_page();
+  printf("%d\n",*dummy);
+  rm4MB_page();
+  printf("%d\n",*dummy);
 
   //testing GP
   //int *a = NULL;

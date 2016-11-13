@@ -52,13 +52,36 @@ void initialize_paging(void){
   return;
 }
 
-void new4MB(void){
-  if(num_process == 0)
+int32_t new4MB_page(void){
+  if(num_process == 0){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
-  else if(num_process == 1)
+    num_process = 1;
+  }
+  else if(num_process == 1){
     page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+    num_process = 2;
+  }
+  else{
+    return -1;
+  }
   paging_setCR();
-  return;
+  return 0;
+}
+
+int32_t rm4MB_page(void){
+  if(num_process == 2){
+    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+    num_process = 1;
+  }
+  else if(num_process == 1){
+    page_dir[PDE_USER_PROG] = 0;
+    num_process = 0;
+  }
+  else{
+    return -1;
+  }
+  paging_setCR();
+  return 0;
 }
 
 //paging_setCR function

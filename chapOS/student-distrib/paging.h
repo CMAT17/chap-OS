@@ -30,6 +30,9 @@ void initialize_paging(void);
 void paging_setCR(void);
 
 //Enable new 4MB page for new program
-void new4MB(void);
+int32_t new4MB_page(void);
+
+//Tear down 4MB page for the program
+int32_t rm4MB_page(void);
 
 #endif
