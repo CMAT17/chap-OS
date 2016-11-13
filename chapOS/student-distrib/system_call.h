@@ -26,7 +26,9 @@
 #define MAX_FILE_SIZE 32
 #define NUM_OPS			4
 
-#define FLAG_ACTIVE		0x0001
+#define FLAG_ACTIVE		0x00000001
+#define FLAG_INACTIVE	0x00000000
+
 
 //extern
 int32_t halt(uint8_t status);
