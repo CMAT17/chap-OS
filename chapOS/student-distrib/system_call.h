@@ -26,6 +26,8 @@
 #define MAX_FILE_SIZE 32
 #define NUM_OPS			4
 
+#define FLAG_ACTIVE		0x0001
+
 //extern
 int32_t halt(uint8_t status);
 int32_t execute(const uint8_t* command);

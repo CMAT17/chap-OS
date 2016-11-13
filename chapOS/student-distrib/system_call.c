@@ -26,7 +26,7 @@ execute(const uint8_t* command) {
     cli();
     //parsing the command into filename and argument
    /* uint8_t parsed_fname[MAX_FILE_SIZE];
-    uint8_t parsed_arg[]
+    uint8_t parsed_arg []
     int fname_start, fname end;
 */
 
@@ -139,18 +139,18 @@ execute(const uint8_t* command) {
     }
 
     //Begin populating the PCB
-    pcb_t * 
+    //pcb_t * 
 
     //obtain entry point
-    entry_point = (uint32_t) f_content;
+    //entry_point = (uint32_t) f_content;
 
-	bitmask = 0x80;
+	/*bitmask = 0x80;
 
 	for(i = 0; i < MAX_OPEN_FILE; i++)
 	{
 		
 	}
-
+	*/
     sti();
     return 0;
 }
@@ -158,21 +158,39 @@ execute(const uint8_t* command) {
 int32_t 
 read(int32_t fd, void* buf, int32_t nbytes) {
 
-	sti();
+	pcb_t * pcb_pointer;
 
-	//Need to set up PCB
+	//Check bounds and conditions
+	if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+		return -1;
 
-	//Check bounds
-	if( fd > 7 || fd < 0)
+	//Get pcb pointer and check if its being open
+	pcb_pointer = get_pcb_ptr();
+	if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
 		return -1;
-	if( buf == NULL )
-		return -1;
-	return 0;
+
+	//Obtain the correct read format
+	int32_t get_correct_read = pcb->f_descs[fd].fops_jmp_tb_ptr.read(fd, buf ,nbytes);
+	return get_correct_read;
 }
 
 int32_t 
 write(int32_t fd, const void* buf, int32_t nbytes) {
-	return 0;
+
+	pcb_t * pcb_pointer;
+
+	//Check bounds and conditions
+	if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+		return -1;
+
+	//Get pcb pointer and check if its being open
+	pcb_pointer = get_pcb_ptr();
+	if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
+		return -1;
+
+	//Obtain the correct read format
+	int32_t get_correct_write = pcb->f_descs[fd].fops_jmp_tb_ptr.write(fd, buf ,nbytes);
+	return get_correct_write;
 }
 
 int32_t 
@@ -221,7 +239,7 @@ gen_new_proc_id(void)
             proc_id = i;
         }
     }
-    return (avail_process_flag == 1 ? proc_id:-1)
+    return (avail_process_flag == 1 ? proc_id:-1);
 }
 
 pcb_t *
@@ -230,7 +248,7 @@ get_pcb_ptr()
     pcb_t * pcb_ptr;
     asm("andl %%esp, %%eax \n"
         :"=a"(pcb_ptr)
-        :"a"(PCB_MASK)
+        //:"a"(PCB_MASK)
         :"cc"
         );
     return pcb_ptr;
