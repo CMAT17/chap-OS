@@ -5,6 +5,6 @@ extern void keyboard_handler();
 
 extern void rtc_handler();
 
-extern main_syscall();
+extern void main_syscall();
 
 #endif

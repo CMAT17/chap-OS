@@ -1,4 +1,4 @@
-.globl main_syscal
+.globl main_syscall
 
 # The main system call function that will call correspond to the EAX
 # EAX: The number of system call to call
@@ -8,14 +8,14 @@
 main_syscall:
     pushal
     pushfl
-    cmpl %eax, 0x0A
-    jg ret_err
-    cmpl %eax, 1
-    jl ret_err
-    call syscall_jmp(%eax)
-    jmp ret_succ
+    cmpl    0x0A, %eax
+    jg      ret_err
+    cmpl    1, %eax
+    jl      ret_err
+    call    syscall_jmp(%eax)
+    jmp     ret_succ
 ret_err:
-    leal -1, %eax       # return -1 for error
+    leal    -1, %eax       # return -1 for error
 ret_succ:
     popfl
     popal
@@ -28,66 +28,66 @@ syscall_jmp:
 # Below are the functions for passing arguments for each sys call functions
 # Passing arg for halt
 _halt:
-    pushl %ebx
-    call halt
-    popl %ebx
+    pushl   %ebx
+    call    halt
+    popl    %ebx
     ret
 
 # Passing arg for execute
 _execute:
-    pushl %ebx
-    call execute
-    popl %ebx
+    pushl   %ebx
+    call    execute
+    popl    %ebx
     ret
 
 # Passing args for read
 _read:
-    pushl %edx
-    pushl %ecx
-    pushl %ebx
-    call read
-    popl %ebx
-    popl %ecx
-    popl %edx
+    pushl   %edx
+    pushl   %ecx
+    pushl   %ebx
+    call    read
+    popl    %ebx
+    popl    %ecx
+    popl    %edx
     ret
 
 # Passing args for write
 _write:
-    pushl %edx
-    pushl %ecx
-    pushl %ebx
-    call write
-    popl %ebx
-    popl %ecx
-    popl %edx
+    pushl   %edx
+    pushl   %ecx
+    pushl   %ebx
+    call    write
+    popl    %ebx
+    popl    %ecx
+    popl    %edx
     ret
 
 # Passing arg for open
 _open:
-    pushl %ebx
-    call open
-    popl %ebx
+    pushl   %ebx
+    call    open
+    popl    %ebx
     ret
 
 # Passing arg for close
 _close:
-    pushl %ebx
-    call close
-    popl %ebx
+    pushl   %ebx
+    call    close
+    popl    %ebx
     ret
 
 # Passing args for getargs
 _getargs:
-    pushl %ecx
-    pushl %ebx
-    call getargs
-    popl %ebx
-    popl %ecx
+    pushl   %ecx
+    pushl   %ebx
+    call    getargs
+    popl    %ebx
+    popl    %ecx
     ret
 
 # Passing arg for vidmap
 _vidmap:
-    pushl %ebx
-    call vidmap
-    popl %ebx
+    pushl   %ebx
+    call    vidmap
+    popl    %ebx
     ret
