@@ -19,6 +19,7 @@
 #include "paging.h"
 #include "types.h"
 #include "file_sys_module.h"
+#include "system_call.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -205,7 +206,7 @@ entry (unsigned long magic, unsigned long addr)
     printf("1");
   }
   */
-  //printf("done rtc_read()\n");
+
   printf("Start Directory Read Test\n");
   for(i = 0; i<20; i++){
   	printf("%d\n",dir_read(fd, testbuf, nbytes));
@@ -216,7 +217,9 @@ entry (unsigned long magic, unsigned long addr)
   read_data(dentry.inode_num, 100, testfcontents, 100);
   printf("%s\n", testfcontents);
 //---------------------------End Sandwich testing------------------------------
-  
+  uint8_t testTXT[100] = "     ThisIsCMD This is Args";
+  execute(testTXT);
+  printf("Done test CMD\n");
   //testing page faults
   /*
   int* test;

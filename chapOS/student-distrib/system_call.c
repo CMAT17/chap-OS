@@ -4,7 +4,7 @@
 
 int32_t 
 halt(uint8_t status) {
-
+	return 0;
 }
 /* Execute()
  * 1) Parse command
@@ -19,10 +19,10 @@ execute(const uint8_t* command) {
     //Disable interrupts
     cli();
     //parsing the command into filename and argument
-    uint8_t parsed_fname[MAX_FILE_SIZE];
+   /* uint8_t parsed_fname[MAX_FILE_SIZE];
     uint8_t parsed_arg[]
     int fname_start, fname end;
-
+*/
 
 
 
@@ -91,16 +91,21 @@ execute(const uint8_t* command) {
 			else
 			{
 				arg_ending_point = i;
-				file_name_command[i] = NULL_CHAR;
+				arg_command[i-arg_starting_point] = NULL_CHAR;
+				printf("See arg Space");
 				break;
 			}
 		}
 		else
 			return -1;
+
+
 	}
 
+	printf("The name of command:%s\n", file_name_command );
+	printf("The arg of command:%s\n ", arg_command );
 	//Read the 4 bytes from the file to the buffer?
-	if( read_data(inode offset, buff, length))
+	//if( read_data(inode offset, buff, length))
 
 	//Check if there is an executable images?
 	//use strncmp	
@@ -113,7 +118,7 @@ execute(const uint8_t* command) {
 	}
 
     sti();
-
+    return 0;
 }
 
 int32_t 
@@ -127,32 +132,33 @@ read(int32_t fd, void* buf, int32_t nbytes) {
 	if( fd > 7 || fd < 0)
 		return -1;
 	if( buf == NULL )
-		retun -1;
+		return -1;
+	return 0;
 }
 
 int32_t 
 write(int32_t fd, const void* buf, int32_t nbytes) {
-
+	return 0;
 }
 
 int32_t 
 open(const uint8_t* filename) {
-
+	return 0;
 }
 
 int32_t
 close(int32_t fd) {
-
+	return 0;
 }
 
 int32_t 
 getargs(uint8_t* buf, int32_t nbytes) {
-
+	return 0;
 }
 
 int32_t 
 vidmap(uint8_t** screen_start) {
-
+	return 0;
 }
 
 /* Following two are for extra credit and later*/
@@ -174,3 +180,7 @@ Hey Herman,
 	Phong started read and write. 
 	Meet tomorrow 10 am at grainger
 */
+
+
+
+
