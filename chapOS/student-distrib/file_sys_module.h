@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "multiboot.h"
+#include "system_call.h"
 
 #define NUM_RESERVED_DENTRY 24
 #define NUM_RESERVED_BOOT   52
@@ -30,6 +31,32 @@ typedef struct inode{
     uint32_t length;
     uint32_t data_block[MAX_DATA_BLOCK_NUM];
 } inode_t;
+
+typedef struct pcb{
+    file_desc_t f_descs[MAX_OPEN_FILE];
+    uint8_t arg_buff[MAX_ARG_SIZE];
+    uint8_t f_names[MAX_OPEN_FILE][FILE_NAME_SIZE];
+    uint8_t proc_num;
+    uint32_t ksp;
+    uint32_t kbp;
+    uint8_t parent_proc_num;
+    uint32_t parent_ksp;
+    uint32_t parent_kbp;
+} pcb_t;
+
+typedef struct file_desc{
+    file_ops_jmp_tb_t *fops_jmp_tb_ptr;
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flags;
+} file_desc_t;
+
+typedef struct file_ops_jmp_tb{
+    uint32_t (*open)(uint32_t, void* buf, int32_t);
+    uint32_t (*read)(uint32_t, void* buf, int32_t);
+    uint32_t (*write)(uint32_t, void* buf, int32_t);
+    uint32_t (*close)(uint32_t);
+} file_ops_jmp_tb_t;
 
 void file_sys_init(module_t* file_sys_module);
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
