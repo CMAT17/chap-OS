@@ -8,6 +8,7 @@ uint32_t rtc__ops_tbl[NUM_OPS] = { (uint32_t)(rtc_open), (uint32_t)(rtc_read), (
 uint32_t file_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
 uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(keyboard_read),(uint32_t)(keyboard_write),(uint32_t)(close_keyboard)};
 
+static pcb_t* get_pcb_ptr();
 
 int32_t 
 halt(uint8_t status) {
@@ -185,7 +186,7 @@ read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
 
     //Obtain the correct read format
-    int32_t get_correct_read = pcb->f_descs[fd].fops_jmp_tb_ptr.read(fd, buf ,nbytes);
+    int32_t get_correct_read = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->read(fd, buf ,nbytes);
     return get_correct_read;
 }
 
@@ -204,7 +205,7 @@ write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
 	//Obtain the correct write format
-	int32_t get_correct_write = pcb->f_descs[fd].fops_jmp_tb_ptr.write(fd, buf ,nbytes);
+	int32_t get_correct_write = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->write(fd, buf ,nbytes);
 	return get_correct_write;
 }
 
@@ -220,7 +221,7 @@ close(int32_t fd) {
 	pcb_t * pcb_pointer;
 
 	//Check bounds and conditions
-	if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+	if(fd >= MAX_OPEN_FILE || fd < 0)
 		return -1;
 
 	//Get pcb pointer and check if its being open
@@ -231,7 +232,7 @@ close(int32_t fd) {
 		pcb_pointer->f_descs[fd].flags = FLAG_INACTIVE;
 
 	//Obtain the correct close format
-	int32_t get_correct_close = pcb->f_descs[fd].fops_jmp_tb_ptr.close(fd);
+	int32_t get_correct_close = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->close(fd);
 	return get_correct_close;
 }
 
