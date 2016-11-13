@@ -12,13 +12,13 @@
 #include "file_sys_module.h"
 
 //define magic numbers
+#define ASCII_CHAR_SIZE 8
+#define ASCII_DELETE    0x7F
+#define ASCII_E         0x45
+#define ASCII_L         0x4C
+#define ASCII_F         0x46
+#define ASCII_ELF       0x7F454C46
 
-#define MAX_ARG_SIZE	100
-#define MAX_NAME_SIZE	10
-#define NULL_CHAR		'\0'
-#define MAX_OPEN_FILE	8
-
-#define MAX_FILE_SIZE 32
 
 //extern
 int32_t halt(uint8_t status);
