@@ -171,7 +171,7 @@ void init_idt()
         SET_IDT_ENTRY(idt[i],generic_handler);
     }
     
-
+    SET_IDT_ENTRY(idt[SYSCALL_ENTRY],main_syscall)
     //Fill in Segment data for exceptions
     SET_IDT_ENTRY(idt[0], exception_DE);
     SET_IDT_ENTRY(idt[1], exception_DB);
