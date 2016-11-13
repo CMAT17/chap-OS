@@ -188,7 +188,7 @@ write(int32_t fd, const void* buf, int32_t nbytes) {
 	if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
 		return -1;
 
-	//Obtain the correct read format
+	//Obtain the correct write format
 	int32_t get_correct_write = pcb->f_descs[fd].fops_jmp_tb_ptr.write(fd, buf ,nbytes);
 	return get_correct_write;
 }
@@ -200,7 +200,23 @@ open(const uint8_t* filename) {
 
 int32_t
 close(int32_t fd) {
-	return 0;
+
+	pcb_t * pcb_pointer;
+
+	//Check bounds and conditions
+	if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+		return -1;
+
+	//Get pcb pointer and check if its being open
+	pcb_pointer = get_pcb_ptr();
+	if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
+		return -1;
+	else
+		pcb_pointer->f_descs[fd].flags = FLAG_INACTIVE;
+
+	//Obtain the correct close format
+	int32_t get_correct_close = pcb->f_descs[fd].fops_jmp_tb_ptr.close(fd);
+	return get_correct_close;
 }
 
 int32_t 
