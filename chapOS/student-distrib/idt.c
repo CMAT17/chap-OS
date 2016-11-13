@@ -4,6 +4,7 @@
 #include "rtc.h"
 #include "keyboard.h"
 #include "lib.h"
+#include "sys_call_asm_link.h"
 
 #define MASTER_PIC        0x20
 #define EXCEPTION_NUM     32
