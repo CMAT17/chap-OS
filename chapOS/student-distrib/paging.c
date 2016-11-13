@@ -58,17 +58,21 @@ void initialize_paging(void){
 //Input: none
 //Output: none
 int32_t new4MB_page(void){
+  //If there is no program running yet, create a new 4MB page at 8MB phy mem
   if(num_process == 0){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
     num_process = 1;
   }
+  //If there is one program running, create a new 4MB page at 12MB phy mem
   else if(num_process == 1){
     page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
     num_process = 2;
   }
+  //Else do nothing, return -1 (error)
   else{
     return -1;
   }
+  //Flush TLB
   paging_setCR();
   return 0;
 }
@@ -79,17 +83,21 @@ int32_t new4MB_page(void){
 //Input: none
 //Output: none
 int32_t rm4MB_page(void){
+  //If the program is running at 12MB, then change to 8MB
   if(num_process == 2){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
     num_process = 1;
   }
+  //If the program is running at 8MB, then disable the program page
   else if(num_process == 1){
     page_dir[PDE_USER_PROG] = 0;
     num_process = 0;
   }
+  //else do nothing and return -1 (error)
   else{
     return -1;
   }
+  //Flush CR3
   paging_setCR();
   return 0;
 }
