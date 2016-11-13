@@ -19,6 +19,7 @@
 #include "paging.h"
 #include "types.h"
 #include "file_sys_module.h"
+#include "system_call.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -158,7 +159,7 @@ entry (unsigned long magic, unsigned long addr)
 	}
 	//obtain the filesystem structure
 	file_sys_module = (module_t *)mbi->mods_addr;
-	file_sys_open(file_sys_module);
+	file_sys_init(file_sys_module);
 	/* Init the PIC */
 	i8259_init();
 
@@ -186,22 +187,39 @@ entry (unsigned long magic, unsigned long addr)
     
   }*/
   char testChar[50];
+  char testbuf[33];
+  char testfcontents[100];
+  int32_t fd = 0;
+  int32_t nbytes = 0;
+  int32_t i;
+  dentry_t dentry;
   //char writeArray[50] = "This is written message";
   printf("Start keyboard read test. Please type to fill in the buffer\n");
   //write_keyboard(writeArray,50);
   read_keyboard(testChar,50);
   printf("The message in the buffer is \"");
   printf("%s\"\n",testChar);
-
+  /*
   printf("Start RTC read test\n");
   while(1){
     rtc_read();
     printf("1");
   }
-  //printf("done rtc_read()\n");
+  */
 
+  printf("Start Directory Read Test\n");
+  for(i = 0; i<20; i++){
+  	printf("%d\n",dir_read(fd, testbuf, nbytes));
+  	printf("%s\n",testbuf);
+  }
+  printf("Start File Read Test \n");
+  read_dentry_by_name("frame0.txt", &dentry);
+  read_data(dentry.inode_num, 100, testfcontents, 100);
+  printf("%s\n", testfcontents);
 //---------------------------End Sandwich testing------------------------------
-  
+  uint8_t testTXT[100] = "     ThisIsCMD This is Args";
+  execute(testTXT);
+  printf("Done test CMD\n");
   //testing page faults
   /*
   int* test;
