@@ -93,7 +93,7 @@ void rtc_irq_handler(){
  * OUTPUT: none
  * RETURN VALUE: 0 only after an interrupt has occurred
  */
-int32_t rtc_read(){
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
   rtc_interrupt_occurred = 0;
   while(rtc_interrupt_occurred==0){
     // spin
@@ -109,7 +109,7 @@ int32_t rtc_read(){
  * RETURN VALUE: -1 on failure
  *               nbytes - Number of bytes written
  */
-int32_t rtc_write(const void* freq, int32_t nbytes){
+int32_t rtc_write(int32_t fd, const void* freq, int32_t nbytes){
   cli();
   disable_irq(RTC_IRQ);
   sti();

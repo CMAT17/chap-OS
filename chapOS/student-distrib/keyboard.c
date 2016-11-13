@@ -212,7 +212,7 @@ press_caps(){
 *   Inputs: none
 *
 *   Return Value: NOTHING
-*	Function: Set the next key on the buffer to be null for read_keyboard.
+*	Function: Set the next key on the buffer to be null for keyboard_read.
 *	Reset the buffer index and print out the character new line to shift to the next line.
 */
 void
@@ -314,6 +314,7 @@ void
 press_other_key(uint8_t key){
 
 	uint8_t actual_key = 0;
+  int32_t fd = -1;
   
   	//for testing
   	static uint32_t mul2 = 2;
@@ -386,10 +387,10 @@ press_other_key(uint8_t key){
         set_coordY(Y_ZERO);
         set_coordX(X_ZERO);
         move_curser();
-        write_keyboard(&test_text,25);
+        keyboard_write(fd, &test_text,25);
         putc(NEW_LINE);
         
-        read_keyboard(my_test_buf,128);
+        keyboard_read(fd, my_test_buf,128);
         for(i=0;i<buffer_index&&my_test_buf[i]!=KEY_NULL;i++)
           putc(my_test_buf[i]);
         
@@ -401,10 +402,10 @@ press_other_key(uint8_t key){
         move_curser();
         char test_text[30] = "Waiting for RTC interrupt";
         char response_text[30] = "RTC interrupt occurred";
-        write_keyboard(&test_text,25);
+        keyboard_write(fd, &test_text,25);
         putc(NEW_LINE);
         rtc_read();
-        write_keyboard(&response_text,22);
+        keyboard_write(fd, &response_text,22);
       }*/
     }
   }
@@ -469,7 +470,7 @@ set_alt_flag(uint8_t key) {
 }
 
 /*
-* int32_t read_keyboard(void * buff, int32_t nbytes) 
+* int32_t keyboard_read(int32_t fd, void * buff, int32_t nbytes) 
 *   Inputs: void * buff: the buffer that needs to be copy to, 
 *			int32_t nbytes: number of bytes to copy
 *   Return Value: The number of keys copied
@@ -477,7 +478,7 @@ set_alt_flag(uint8_t key) {
 *   Afterward return the number of keys copied.
 */
 int32_t 
-read_keyboard(void * buff, int32_t nbytes) {
+keyboard_read(int32_t fd, void* buf, int32_t nbytes){
   int i;
   return_flag = 0;
   while(!return_flag);
@@ -486,7 +487,7 @@ read_keyboard(void * buff, int32_t nbytes) {
     if(i>=nbytes)
       return i;
     //Copy the key from buffer to the buff
-    *(unsigned char*)(buff+i) = buffer_key[i];
+    *(unsigned char*)(buf+i) = buffer_key[i];
     if(buffer_key[i] == KEY_NULL)
       return i;
   }
@@ -495,7 +496,7 @@ read_keyboard(void * buff, int32_t nbytes) {
 }
 
 /*
-* int32_t write_keyboard(void * buff, int32_t nbytes)
+* int32_t keyboard_write(int32_t fd, void * buff, int32_t nbytes)
 *   Inputs: void * buff: the buffer that will be print to the terminal
 *			int32_t nbytes: number of bytes to print to terminal
 *   Return Value: The number of keys printed
@@ -503,7 +504,7 @@ read_keyboard(void * buff, int32_t nbytes) {
 *   Afterward return the number of keys printed.
 */
 int32_t 
-write_keyboard(void * buff, int32_t nbytes){
+keyboard_write(int32_t fd, const void* buff, int32_t nbytes){
   int i;
   for(i=0; i<nbytes; i++){
     buffer_key[i] = *(unsigned char*)(buff+i);
