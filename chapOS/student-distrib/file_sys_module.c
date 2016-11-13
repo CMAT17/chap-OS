@@ -12,6 +12,7 @@ static uint32_t directory_index = 0;
 void file_sys_init(module_t* file_sys_module)
 {
     file_sys_start = file_sys_module->mod_start;
+    printf("%d\n",file_sys_start);
     inode_start = file_sys_start + DATA_BLOCK_SIZE;
     boot_block_ptr = (boot_block_t *)file_sys_start;
     data_block_start = file_sys_start + (1+boot_block_ptr->num_inodes)*DATA_BLOCK_SIZE;
@@ -158,7 +159,8 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     for(i = 0; i<=FILE_NAME_SIZE+1; i++){
         ((int8_t*)(buf))[i] = '\0';
     }
-    if(read_dentry_by_index( directory_index,&dir_entry) == 0)
+    int32_t test = read_dentry_by_index(directory_index, &dir_entry);
+    if(test == 0)
     {
         //dentry can be read by index
         uint32_t length = strlen((int8_t *) dir_entry.file_name);

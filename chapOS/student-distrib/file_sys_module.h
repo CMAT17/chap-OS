@@ -12,6 +12,12 @@
 #define MAX_DATA_BLOCK_NUM  1023
 #define DATA_BLOCK_SIZE     4096
 
+#define MAX_ARG_SIZE    100
+#define MAX_NAME_SIZE   10
+#define NULL_CHAR       '\0'
+#define MAX_OPEN_FILE   8
+#define MAX_FILE_SIZE  32
+
 typedef struct dentry{
     uint8_t file_name[FILE_NAME_SIZE];
     uint32_t file_type;
@@ -32,6 +38,20 @@ typedef struct inode{
     uint32_t data_block[MAX_DATA_BLOCK_NUM];
 } inode_t;
 
+typedef struct file_ops_jmp_tb{
+    uint32_t (*open)(uint32_t, void* buf, int32_t);
+    uint32_t (*read)(uint32_t, void* buf, int32_t);
+    uint32_t (*write)(uint32_t, void* buf, int32_t);
+    uint32_t (*close)(uint32_t);
+} file_ops_jmp_tb_t;
+
+typedef struct file_desc{
+    file_ops_jmp_tb_t *fops_jmp_tb_ptr;
+    uint32_t inode;
+    uint32_t file_pos;
+    uint32_t flags;
+} file_desc_t;
+
 typedef struct pcb{
     file_desc_t f_descs[MAX_OPEN_FILE];
     uint8_t arg_buff[MAX_ARG_SIZE];
@@ -43,20 +63,6 @@ typedef struct pcb{
     uint32_t parent_ksp;
     uint32_t parent_kbp;
 } pcb_t;
-
-typedef struct file_desc{
-    file_ops_jmp_tb_t *fops_jmp_tb_ptr;
-    uint32_t inode;
-    uint32_t file_pos;
-    uint32_t flags;
-} file_desc_t;
-
-typedef struct file_ops_jmp_tb{
-    uint32_t (*open)(uint32_t, void* buf, int32_t);
-    uint32_t (*read)(uint32_t, void* buf, int32_t);
-    uint32_t (*write)(uint32_t, void* buf, int32_t);
-    uint32_t (*close)(uint32_t);
-} file_ops_jmp_tb_t;
 
 void file_sys_init(module_t* file_sys_module);
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry);
