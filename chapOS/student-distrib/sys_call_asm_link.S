@@ -14,7 +14,7 @@ main_syscall:
     jg      ret_err
     cmpl    $1, %eax
     jl      ret_err
-    call    syscall_jmp(%eax)
+    call    *syscall_jmp(%eax)
     movl    %eax, (%esi)
     popal
     movl    (%esp), %eax

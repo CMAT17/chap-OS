@@ -4,16 +4,27 @@
 #import "paging.h"
 
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
-uint32_t rtc__ops_tbl[NUM_OPS] = { (uint32_t)(rtc_open), (uint32_t)(rtc_read), (uint32_t)(rtc_write), (uint32_t)(rtc_close)};
-uint32_t file_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
-uint32_t dir_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
-uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(read_keyboard),(uint32_t)(do_nothing),(uint32_t)(close_keyboard)};
-uint32_t stdout_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(do_nothing),(uint32_t)(write_keyboard),(uint32_t)(close_keyboard)};
+file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
+file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close};
+file_ops_jmp_tb_t dir_ops_tbl = { file_open, file_read, file_write, file_close };
+file_ops_jmp_tb_t stdin_ops_tbl = { open_keyboard, keyboard_read, do_nothing, close_keyboard };
+file_ops_jmp_tb_t stdout_ops_tbl = { open_keyboard, do_nothing, keyboard_write, close_keyboard};
 
 static pcb_t* get_pcb_ptr();
 
+/*Restore
+	-pcb
+	-esp, ebp
+	-paging structures
+	-tss, esp0
+*/
 int32_t 
 halt(uint8_t status) {
+	cli();
+
+	int i = 0;
+	i++;
+	sti();
 	return 0;
 }
 /* Execute()
@@ -22,6 +33,7 @@ halt(uint8_t status) {
  * 3) Reorganize virtual memory
  * 4) File Loader
  * 5) PCB
+ ~~ Setup stdin and stdout
  * 6) Context/TSS switch
  * 7) IRET crap
  */
@@ -115,6 +127,8 @@ execute(const uint8_t* command) {
 			return -1;
 
 
+
+
 	}
 
 	printf("The name of command: %s\n", file_name_command );
@@ -171,11 +185,11 @@ execute(const uint8_t* command) {
 
     //Set the values for stdin open
     proc_PCB->f_descs[FDS_STDIN_IDX].flags = FLAG_ACTIVE;
-    proc_PCB->f_descs[FDS_STDIN_IDX].fops_jmp_tb_ptr = stdin_ops_tbl;
+    proc_PCB->f_descs[FDS_STDIN_IDX].fops_jmp_tb_ptr = &stdin_ops_tbl;
 
     //Set the values for stdin open
     proc_PCB->f_descs[FDS_STDOUT_IDX].flags = FLAG_ACTIVE;
-    proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = stdout_ops_tbl;
+    proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = &stdout_ops_tbl;
 
     sti();
     return 0;
@@ -228,6 +242,7 @@ open(const uint8_t* filename) {
 	pcb_t * pcb_pointer;
 	dentry_t entry; 
 	uint32_t dentry_file_type = -1;
+	uint32_t check_dentry; 
 
 	pcb_pointer = get_pcb_ptr();
 
@@ -251,10 +266,10 @@ open(const uint8_t* filename) {
 	pcb_pointer->f_descs[i].flags = FLAG_ACTIVE;
 	pcb_pointer->f_descs[i].file_pos = FILE_POS;
 
-	//Get the dentry and store it in entry
-	read_dentry_by_name(filename, &entry);
+	//Get the dentry and store it in entry and check if it work
+	check_dentry = read_dentry_by_name(filename, &entry);
 
-	if( entry == -1)
+	if( check_dentry == -1)
 		return -1;
 	else
 	{
@@ -265,7 +280,7 @@ open(const uint8_t* filename) {
 	{
 		if(dir_open(filename) == 0)
 		{	
-			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = dir_ops_tbl;
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = &dir_ops_tbl;
 			//inode does not have meaning
 			pcb_pointer->f_descs[i].inode = NULL;
 			
@@ -277,19 +292,20 @@ open(const uint8_t* filename) {
 	{
 		if(file_open(filename) == 0)
 		{
-			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = file_ops_tbl;
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = &file_ops_tbl;
 			//Inode only meaningful for file
-			pcb_pointer->f_descs[i].inode = dentry_file_type.inode_num;
+			pcb_pointer->f_descs[i].inode = entry.inode_num;
 
 		}
 		else
 			return -1;
 	}
-	else if( dentry_file_type == FILE_TYPE_RTC)
+	else 
 	{
-		if((rtc_open(filename) == 0)
+		//dentry_file_type == FILE_TYPE_RTC
+		if( rtc_open(filename) == 0)
 		{
-			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = rtc__ops_tbl;
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = &rtc__ops_tbl;
 			//inode does not have meaning
 			pcb_pointer->f_descs[i].inode = NULL;
 		}

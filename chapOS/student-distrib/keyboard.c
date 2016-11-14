@@ -72,29 +72,31 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 };
 
 /*
-* void open_keyboard()
+* int32_t open_keyboard()
 *   Inputs: none
 *
 *   Return Value: NOTHING
 *	Function: Initialize keyboard with the KEYBOARD_IRQ on the PIC
 *   Also set up the buffer for the keyboard
 */
-void
+int32_t
 open_keyboard(const uint8_t* filename){
 	initialize_clear_buffer();
 	enable_irq(KEYBOARD_IRQ);
+  return 0;
 }
 
 /*
-* void close_keyboard(){
+* int32_t close_keyboard(){
 *   Inputs: none
 *
 *   Return Value: NOTHING
 * Function: close the keyboard with the KEYBOARD_IRQ on the PIC
 */
-void
+int32_t
 close_keyboard(int32_t fd){
   disable_irq(KEYBOARD_IRQ);
+  return 0;
 }
 
 /*
@@ -519,21 +521,6 @@ keyboard_write(int32_t fd, const void* buff, int32_t nbytes){
   return i;
 }
 
-int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes) {
-    return 0;
-}
-
-int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes) {
-    return 0;
-}
-
-int32_t terminal_open(const uint8_t* filename) {
-    return 0;
-}
-
-int32_t terminal_close(int32_t fd) {
-    return 0;
-}
 
 
 
