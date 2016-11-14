@@ -1,7 +1,8 @@
 /* Adding all the possible includes that we might need */
 #include "system_call.h"
 #include "file_sys_module.h"
-#import "paging.h"
+#include "paging.h"
+#include "x86_desc.h"
 
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
 uint32_t rtc__ops_tbl[NUM_OPS] = { (uint32_t)(rtc_open), (uint32_t)(rtc_read), (uint32_t)(rtc_write), (uint32_t)(rtc_close)};
@@ -49,6 +50,7 @@ execute(const uint8_t* command) {
     int32_t f_content = 0;
     uint32_t entry_point;
     int32_t new_proc_id;
+    int32_t proc_stat;
 	// The command does not exist
 	if( command == NULL )
 		return -1;
@@ -161,8 +163,13 @@ execute(const uint8_t* command) {
     entry_point = (uint32_t) f_content;
 
     //re-organize virtual memory
-    new4MB_page();
+    proc_stat = new4MB_page();
 
+    if(proc_stat == -1)
+    {
+        printf("Too many processes\n");
+        return -1;
+    }
     //Load file into virtual memory
     uint32_t len = get_file_size(f_dentry.inode_num);
     printf("%d\n", read_data(f_dentry.inode_num, 0, (uint8_t*)PROG_IMAGE_VADDR, len));
@@ -177,7 +184,32 @@ execute(const uint8_t* command) {
     proc_PCB->f_descs[FDS_STDOUT_IDX].flags = FLAG_ACTIVE;
     proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = stdout_ops_tbl;
 
+    //set tss.ss0 and esp0 to hold kernel data segment and
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
     sti();
+
+    asm volatile(
+                    "cli                        \n"
+                    "movw   $0x2B,%%ax          \n"   //User data segment index
+                    "movw   %%ax, %%ds          \n"   //push to data segment register
+                    "pushl  $0x2B               \n"   //push user data segment to stack
+                    "movl   $0x083FFFFC, %%eax  \n"   //push 4-byte aligned bottom of stack
+                    "pushl  %%eax               \n"   
+                    "pushf                     \n"   //push eflags
+                    "pushl  $0x23               \n"   //push user code segment
+                    "movl   %0, %%ebx           \n"   //move entry point into ebx, to be pushed
+                    "pushl  %%ebx               \n"
+                    "iret                       \n"
+                    "RET_FROM_IRET:             \n"
+                    "leave                      \n"
+                    "sti                        \n"
+                    "ret                        \n"
+                    : /*no outputs*/
+                    : "r"(entry_point)
+                    : "%ebx", "%eax"
+                    );
+
     return 0;
 }
 
@@ -354,11 +386,10 @@ gen_new_proc_id(void)
         if(proc_id_flags[i]==0)
         {
             proc_id_flags[i] = 1;
-            avail_process_flag = 1;
-            proc_id = i;
+            return i;
         }
     }
-    return (avail_process_flag == 1 ? proc_id:-1);
+    return (-1);
 }
 
 pcb_t *
