@@ -13,12 +13,12 @@ main_syscall:
     cmpl    $1, %eax
     jl      ret_err
     call    syscall_jmp(%eax)
+    popal
     jmp     ret_succ
 ret_err:
     leal    -1, %eax       # return -1 for error
 ret_succ:
     popfl
-    popal
     iret
     
 # The jump table
