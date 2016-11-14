@@ -260,27 +260,35 @@ execute(const uint8_t* command) {
     //set tss.ss0 and esp0 to hold kernel data segment and
     tss.ss0 = KERNEL_DS;
     tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
-	
-	//Sandwich added
-	/*
-	uint32_t temp;
-	asm volatile(
-		"movl %%cr3, %0;"
-		: "=r"(temp)
-	);*/
-	tss.cr3 = (uint32_t)page_dir;
-	//printf("CR3: %d\n",temp);
-	//printf("My extern: %d\n",(uint32_t)page_dir);
-	//printf("tss cr3: %d\n",tss.cr3);
+
+  //Sandwich added
+  /*
+  uint32_t temp;
+  asm volatile(
+    "movl %%cr3, %0;"
+    : "=r"(temp)
+  );*/
+  tss.cr3 = (uint32_t)page_dir;
+  //printf("CR3: %d\n",temp);
+  //printf("My extern: %d\n",(uint32_t)page_dir);
+  //printf("tss cr3: %d\n",tss.cr3);
     //End Sandwich added
-	/*printf("entry_point: %x\n",entry_point);
-	uint32_t* temp = (uint32_t*)0x080482e8;
-	*temp = 55555;
-	printf("temp: %d\n",*temp);
-	printf("addr: %x\n",temp);
-	printf("entry_point: %d\n",*(uint32_t*)entry_point);*/
-	
-	sti();
+  /*printf("entry_point: %x\n",entry_point);
+  uint32_t* temp = (uint32_t*)0x080482e8;
+  *temp = 55555;
+  printf("temp: %d\n",*temp);
+  printf("addr: %x\n",temp);
+  printf("entry_point: %d\n",*(uint32_t*)entry_point);*/
+/*
+  uint32_t myFl;
+  asm volatile(
+    "pushfl;"
+    "popl %0"
+    :"=r"(myFl)
+  );
+  printf("EFlags: %x\n",myFl);*/
+
+  sti();
 
     asm volatile(
                     "cli                        \n"
