@@ -3,6 +3,7 @@
 #include "file_sys_module.h"
 #include "paging.h"
 #include "x86_desc.h"
+#include "lib.h"
 
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
 file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
@@ -10,8 +11,10 @@ file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close}
 file_ops_jmp_tb_t dir_ops_tbl = { file_open, file_read, file_write, file_close };
 file_ops_jmp_tb_t stdin_ops_tbl = { open_keyboard, keyboard_read, do_nothing, close_keyboard };
 file_ops_jmp_tb_t stdout_ops_tbl = { open_keyboard, do_nothing, keyboard_write, close_keyboard};
+file_ops_jmp_tb_t no_file_ops = {do_nothing, do_nothing, do_nothing, do_nothing};
 
 static pcb_t* get_pcb_ptr();
+static uint32_t active_proc_num;
 
 /*Restore
 	-pcb
@@ -22,10 +25,42 @@ static pcb_t* get_pcb_ptr();
 int32_t 
 halt(uint8_t status) {
 	cli();
+    int32_t i;
+    pcb_t * cur_PCB;
 
-	int i = 0;
-	i++;
+
+    cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num +1));
+    //clear process for use
+    proc_id_flags[active_proc_num] = FLAG_INACTIVE;
+
+    //close all files
+    for(i = 0; i<MAX_FILES; i++)
+    {
+        if(cur_PCB->f_descs[i].flags = FLAG_ACTIVE)
+        {
+            close(i);
+        }
+        cur_PCB->f_descs[i].fops_jmp_tb_ptr = no_file_ops;
+    }
+
+    active_proc_num = cur_PCB->parent_proc_num;
+
+    rm4MB_page();
+
+    tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num);
+
 	sti();
+    
+    asm volatile(
+                    "cli                        \n"
+                    "movl   %0, %%eax           \n"
+                    "movl   %1, %%ebp           \n"
+                    "movl   %2, %%esp           \n"
+                    "jmp    RET_FROM_IRET"
+                    :
+                    : "r"(status), "r"(parent_PCB->kbp), "r"(parent_PCB->ksp)
+                    :
+                );
 	return 0;
 }
 /* Execute()
@@ -159,29 +194,7 @@ execute(const uint8_t* command) {
         printf("What the fuck man \n");
         return -1;
     }
-
-    //Get address of process PCB
-    pcb_t * proc_PCB;
     
-    new_proc_id = gen_new_proc_id();
-    
-    if(new_proc_id<0)
-    {
-        return -1;
-    }
-
-    proc_PCB = (pcb_t*)(PAGE_8MB-STACK_8KB*(new_proc_id + 1));
-    proc_PCB->proc_num = new_proc_id;
-
-    asm volatile(
-                    "movl   %%ebp, %0   \n"
-                    "movl   %%esp, %1   \n"
-                    : "=r"(proc_PCB->kbp), "=r"(proc_PCB->ksp)
-                    : //no inputs
-                    : //no clobber
-                );
-    
-
     //obtain entry point
     read_data(f_dentry.inode_num, ENTRY_PTW_START, MIN_READ_ELF_SIZE);
     entry_point = *(uint32_t *) f_content_buf;
@@ -198,8 +211,28 @@ execute(const uint8_t* command) {
     uint32_t len = get_file_size(f_dentry.inode_num);
     printf("%d\n", read_data(f_dentry.inode_num, 0, (uint8_t*)PROG_IMAGE_VADDR, len));
 
-    //PCB s
+    //PCB Stuff
+    pcb_t * proc_PCB;
+    pcb_t * parent_PCB; 
+    
+    new_proc_id = gen_new_proc_id();
+    
+    if(new_proc_id<0)
+    {
+        return -1;
+    }
 
+    proc_PCB = (pcb_t*)(PAGE_8MB-STACK_8KB*(new_proc_id + 1));
+    proc_PCB->proc_num = new_proc_id;
+    active_proc_num = new_proc_id;
+
+    asm volatile(
+                    "movl   %%ebp, %0   \n"
+                    "movl   %%esp, %1   \n"
+                    : "=r"(proc_PCB->kbp), "=r"(proc_PCB->ksp)
+                    : //no inputs
+                    : //no clobber
+                );
     //Set the values for stdin open
     proc_PCB->f_descs[FDS_STDIN_IDX].flags = FLAG_ACTIVE;
     proc_PCB->f_descs[FDS_STDIN_IDX].fops_jmp_tb_ptr = &stdin_ops_tbl;
@@ -208,6 +241,20 @@ execute(const uint8_t* command) {
     proc_PCB->f_descs[FDS_STDOUT_IDX].flags = FLAG_ACTIVE;
     proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = &stdout_ops_tbl;
 
+    strcpy(proc_PCB->arg_buff, arg_command);
+
+    if(!new_proc_id)
+    {
+        proc_PCB->parent_proc_num = new_proc_id;
+        proc_PCB->parent_ksp = proc_PCB->ksp;
+        proc_PCB->parent_kbp = proc_PCB->kbp;
+    }
+    else
+    {
+        parent_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(proc_PCB->proc_num));
+        proc_PCB->parent_ksp = parent_PCB->ksp;
+        proc_PCB->parent_kbp = parent_PCB->kbp;
+    }
     //set tss.ss0 and esp0 to hold kernel data segment and
     tss.ss0 = KERNEL_DS;
     tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
@@ -337,7 +384,7 @@ open(const uint8_t* filename) {
 			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = &file_ops_tbl;
 			//Inode only meaningful for file
 			pcb_pointer->f_descs[i].inode = entry.inode_num;
-
+            strncpy((int8_t*) pcb_pointer->f_names[i], (int8_t*) filename, MAX_FILE_SIZE);
 		}
 		else
 			return -1;
