@@ -4,18 +4,20 @@
 #include "rtc.h"
 #include "keyboard.h"
 #include "lib.h"
+#include "system_call.h"
 
 #define MASTER_PIC        0x20
 #define EXCEPTION_NUM     32
 #define KEYBOARD          0x21
 #define RTC               0x28
 #define SYSCALL_ENTRY     0x80
+#define EXCEPT_RETVAL     1
 
 #define EXCEPT_FN(exception_name, msg)  \
 static void exception_name()            \
 {                                       \
     printf("%s\n", msg);                \
-    while(1);                           \
+    halt(EXCEPT_RETVAL);                \
 }                                       \
 
 static void generic_handler();
@@ -52,7 +54,7 @@ static void exception_PF(){
         : "cc" 
         );
     printf("Page Fault at %d", cr2);
-    while(1);
+    halt(EXCEPT_RETVAL);
 }
 
 //Generic handler
