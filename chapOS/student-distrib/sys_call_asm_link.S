@@ -9,7 +9,7 @@ main_syscall:
     pushfl
     subl    $4, %esp
     pushal
-    leal    esp+32, %esi
+    leal    32(%esp), %esi
     cmpl    $10, %eax
     jg      ret_err
     cmpl    $1, %eax
