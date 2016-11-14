@@ -34,11 +34,21 @@ int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes)
     return -1;
 }
 
+/*
+ * read_dentry_by_name
+ *         Searches filesystem for given filename and if found copies
+ *         file information into dentry
+ * INPUT: fname - filename to be searched for in filesystem
+ *        dentry - filled in with file name, file type, and inode number
+ * OUTPUT: none
+ * RETURN VALUE: 0 on success, -1 on failure
+ */
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
 {
     int file_not_found = 1;
     int i = 0;
 
+    //iterate through directory entries until fname matches the dentry filename
     while(file_not_found == 1 && i < MAX_DENTRY_NUM)
     {
         if(strncmp((int8_t*)fname,(int8_t*) boot_block_ptr->dir_entries[i].file_name, FILE_NAME_SIZE) == 0){
@@ -54,16 +64,27 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
         }
         i++;
     }
+
+    //return -1 if file is nonexistent 
     return (file_not_found == 1 ? -1 : 0); 
 }
 
+/*
+ * read_dentry_by_index
+ * INPUT: index - index of directory entry
+ *        dentry - filled in with file name, file type, and inode number
+ * OUTPUT: none
+ * RETURN VALUE: 0 on success, -1 on failure
+ */
 int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
 {
+    //check if invalid index
     if(index>=MAX_DENTRY_NUM)
     {
         return -1;
     }
 
+    //fills in dentry with file name, type, and inode number
     strncpy((int8_t*)dentry->file_name, (int8_t*)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
     dentry->file_type = boot_block_ptr->dir_entries[index].file_type;
     dentry->inode_num = boot_block_ptr->dir_entries[index].inode_num;
@@ -71,6 +92,15 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
     return 0;
 }
 
+/*
+ * read_data
+ * INPUT: inode - index node
+ *        offset - starting position in file
+ *        buf - data stored in this buffer
+ *        length - read up to this number of bytes
+ * OUTPUT: none
+ * RETURN VALUE: number of bytes read, 0 indicatees end of file, -1 on failure
+ */
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length)
 {
     int i;
@@ -79,11 +109,12 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
     uint32_t cur_data_block;
     inode_t* inode_data_ptr = (inode_t *) (inode_start + (inode)*DATA_BLOCK_SIZE);
     
+    //check if given inode number is in range
     if(inode >= boot_block_ptr->num_inodes)
     {
         return -1;
     }
-
+    //no bytes will be read because offset is greater than the length
     if(offset >= inode_data_ptr->length)
     {
         return 0;
@@ -104,6 +135,7 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length
             cur_data_block = data_block_start+(inode_data_ptr->data_block[cur_block_index]) * DATA_BLOCK_SIZE;
         }
 
+        //checks if bad data block number is found within the file bounds of inode
         if(inode_data_ptr->data_block[cur_block_index] >= boot_block_ptr->num_data_blocks)
         {
             return -1;
@@ -131,6 +163,14 @@ int32_t file_write(int32_t fd, const void* buf, int32_t nbytes)
     return -1;
 }
 
+/*
+ * file_read
+ * INPUT: fd - file descriptor in array of pcb
+ *        buf - data stored in this buffer
+ *        nbytes - read this number of bytes
+ * OUTPUT: none
+ * RETURN VALUE: number of bytes read
+ */
 int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
 {
     uint32_t offset, inode_num;
@@ -161,6 +201,15 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
     return -1;
 }
 
+
+/*
+ * dir_read
+ * INPUT: fd - file descriptor in array of pcb
+ *        buf - data stored in this buffer
+ *        nbytes - read this number of bytes
+ * OUTPUT: none
+ * RETURN VALUE: number of bytes read, 0 indicatees end of file
+ */
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
     dentry_t dir_entry;
@@ -186,6 +235,12 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
     }
 }
 
+/*
+ * get_file_size
+ * INPUT: inode_num - number of inode
+ * OUTPUT: none
+ * RETURN VALUE: length in bytes of file
+ */
 uint32_t get_file_size(uint32_t inode_num)
 {
     inode_t * f_inode;
