@@ -27,8 +27,9 @@
 #define MAX_PROCESSES       6
 #define PAGE_8MB            0x800000  
 #define STACK_8KB           0x2000
-#define PROG_IMAGE_VADDR    0x08048000      
-
+#define PROG_IMAGE_VADDR    0x08048000
+#define ENTRY_PTW_START     24      
+#define MAX_FILES           8
 //Flag types
 #define FLAG_ACTIVE		0x00000001
 #define FLAG_INACTIVE	0x00000000

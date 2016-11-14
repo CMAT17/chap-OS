@@ -13,7 +13,6 @@ file_ops_jmp_tb_t stdin_ops_tbl = { open_keyboard, keyboard_read, do_nothing, cl
 file_ops_jmp_tb_t stdout_ops_tbl = { open_keyboard, do_nothing, keyboard_write, close_keyboard};
 file_ops_jmp_tb_t no_file_ops = {do_nothing, do_nothing, do_nothing, do_nothing};
 
-static pcb_t* get_pcb_ptr();
 static uint32_t active_proc_num;
 
 /*Restore
@@ -36,11 +35,11 @@ halt(uint8_t status) {
     //close all files
     for(i = 0; i<MAX_FILES; i++)
     {
-        if(cur_PCB->f_descs[i].flags = FLAG_ACTIVE)
+        if(cur_PCB->f_descs[i].flags == FLAG_ACTIVE)
         {
             close(i);
         }
-        cur_PCB->f_descs[i].fops_jmp_tb_ptr = no_file_ops;
+        cur_PCB->f_descs[i].fops_jmp_tb_ptr = &no_file_ops;
     }
 
     active_proc_num = cur_PCB->parent_proc_num;
@@ -53,13 +52,14 @@ halt(uint8_t status) {
     
     asm volatile(
                     "cli                        \n"
-                    "movl   %0, %%eax           \n"
+                    "xorl   %%eax,%%eax         \n"
+                    "movb   %0, %%al            \n"
                     "movl   %1, %%ebp           \n"
                     "movl   %2, %%esp           \n"
-                    "jmp    RET_FROM_IRET"
+                    "jmp    RET_FROM_IRET       \n"
                     :
-                    : "r"(status), "r"(parent_PCB->kbp), "r"(parent_PCB->ksp)
-                    :
+                    : "r"(status), "r"(cur_PCB->parent_kbp), "r"(cur_PCB->parent_ksp)
+                    :"cc"
                 );
 	return 0;
 }
@@ -196,7 +196,7 @@ execute(const uint8_t* command) {
     }
     
     //obtain entry point
-    read_data(f_dentry.inode_num, ENTRY_PTW_START, MIN_READ_ELF_SIZE);
+    read_data(f_dentry.inode_num, ENTRY_PTW_START,f_content_buf, MIN_READ_ELF_SIZE);
     entry_point = *(uint32_t *) f_content_buf;
 
     //re-organize virtual memory
@@ -231,7 +231,6 @@ execute(const uint8_t* command) {
                     "movl   %%esp, %1   \n"
                     : "=r"(proc_PCB->kbp), "=r"(proc_PCB->ksp)
                     : //no inputs
-                    : //no clobber
                 );
     //Set the values for stdin open
     proc_PCB->f_descs[FDS_STDIN_IDX].flags = FLAG_ACTIVE;
@@ -241,7 +240,7 @@ execute(const uint8_t* command) {
     proc_PCB->f_descs[FDS_STDOUT_IDX].flags = FLAG_ACTIVE;
     proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = &stdout_ops_tbl;
 
-    strcpy(proc_PCB->arg_buff, arg_command);
+    strcpy((int8_t*)(proc_PCB->arg_buff), arg_command);
 
     if(!new_proc_id)
     {
@@ -267,7 +266,7 @@ execute(const uint8_t* command) {
                     "pushl  $0x2B               \n"   //push user data segment to stack
                     "movl   $0x083FFFFC, %%eax  \n"   //push 4-byte aligned bottom of stack
                     "pushl  %%eax               \n"   
-                    "pushf                     \n"   //push eflags
+                    "pushf                      \n"   //push eflags
                     "pushl  $0x23               \n"   //push user code segment
                     "movl   %0, %%ebx           \n"   //move entry point into ebx, to be pushed
                     "pushl  %%ebx               \n"
@@ -450,9 +449,7 @@ sigreturn (void) {
 int32_t
 gen_new_proc_id(void)
 {
-    int32_t i, proc_id;
-    int8_t avail_process_flag = 0;
-
+    int32_t i;
 
     for(i=0; i<MAX_PROCESSES;i++)
     {

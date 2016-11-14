@@ -135,14 +135,15 @@ int32_t file_read(int32_t fd, void* buf, int32_t nbytes)
 {
     uint32_t offset, inode_num;
     int32_t nbytes_read;
-    pcb_t* cur_pcb = get_pcb_ptr();
+    pcb_t* cur_pcb;
+    cur_pcb = get_pcb_ptr();
     
     inode_num = cur_pcb->f_descs[fd].inode;
     offset = cur_pcb->f_descs[fd].file_pos;
     nbytes_read = read_data(inode_num, offset, (uint8_t *) buf, nbytes);
 
-    cur_pcb->f_descs[fd].file_pos += nybtes_read;
-
+    cur_pcb->f_descs[fd].file_pos += nbytes_read;
+    return nbytes_read;
 }
 
 int32_t dir_open(const uint8_t * filename)

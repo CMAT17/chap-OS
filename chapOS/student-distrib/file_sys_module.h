@@ -86,5 +86,7 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes);
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes);
 
 uint32_t get_file_size(uint32_t inode_num);
+pcb_t* get_pcb_ptr();
+
 
 #endif
