@@ -189,7 +189,7 @@ entry (unsigned long magic, unsigned long addr)
   }*/
   char testChar[50];
   char testbuf[33];
-  uint8_t testfcontents[100];
+  uint8_t testfcontents[10000];
   int32_t fd = 0;
   int32_t unused_fd = -1;
   int32_t nbytes = 0;
@@ -217,8 +217,11 @@ entry (unsigned long magic, unsigned long addr)
   printf("Start File Read Test \n");
   read_dentry_by_name((uint8_t*)"shell", &dentry);
   printf("shell\n");
-  read_data(dentry.inode_num, 0, testfcontents, 100);
+  uint32_t len = get_file_size(dentry.inode_num);
+  printf("%d\n", len);
+  printf("%d\n",read_data(dentry.inode_num, 0, testfcontents, len));
   printf("%s\n", testfcontents);
+  execute((uint8_t*)"shell");
 //---------------------------End Sandwich testing------------------------------
   //uint8_t testTXT[100] = "     shell       This is Args";
   //execute(testTXT);
@@ -254,6 +257,7 @@ entry (unsigned long magic, unsigned long addr)
 	/* Execute the first program (`shell') ... */
 
 	/* Spin (nicely, so we don't chew up cycles) */
+
 	asm volatile(".1: hlt; jmp .1;");
 }
 

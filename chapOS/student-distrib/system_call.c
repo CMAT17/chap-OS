@@ -197,7 +197,7 @@ execute(const uint8_t* command) {
     
     //obtain entry point
     read_data(f_dentry.inode_num, ENTRY_PTW_START,f_content_buf, MIN_READ_ELF_SIZE);
-    entry_point = *(uint32_t *) f_content_buf;
+    entry_point = *((uint32_t *) f_content_buf);
 
     //re-organize virtual memory
     proc_stat = new4MB_page();
