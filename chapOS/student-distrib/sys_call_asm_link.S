@@ -8,9 +8,9 @@
 main_syscall:
     pushal
     pushfl
-    cmpl    0x0A, %eax
+    cmpl    $10, %eax
     jg      ret_err
-    cmpl    1, %eax
+    cmpl    $1, %eax
     jl      ret_err
     call    syscall_jmp(%eax)
     jmp     ret_succ
