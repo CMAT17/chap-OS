@@ -6,7 +6,9 @@
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
 uint32_t rtc__ops_tbl[NUM_OPS] = { (uint32_t)(rtc_open), (uint32_t)(rtc_read), (uint32_t)(rtc_write), (uint32_t)(rtc_close)};
 uint32_t file_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
-uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(keyboard_read),(uint32_t)(keyboard_write),(uint32_t)(close_keyboard)};
+uint32_t dir_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(uint32_t)(file_write),(uint32_t)(file_close)};
+uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(read_keyboard),(uint32_t)(do_nothing),(uint32_t)(close_keyboard)};
+uint32_t stdout_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(do_nothing),(uint32_t)(write_keyboard),(uint32_t)(close_keyboard)};
 
 static pcb_t* get_pcb_ptr();
 
@@ -167,6 +169,14 @@ execute(const uint8_t* command) {
 
     //PCB s
 
+    //Set the values for stdin open
+    proc_PCB->f_descs[FDS_STDIN_IDX].flags = FLAG_ACTIVE;
+    proc_PCB->f_descs[FDS_STDIN_IDX].fops_jmp_tb_ptr = stdin_ops_tbl;
+
+    //Set the values for stdin open
+    proc_PCB->f_descs[FDS_STDOUT_IDX].flags = FLAG_ACTIVE;
+    proc_PCB->f_descs[FDS_STDOUT_IDX].fops_jmp_tb_ptr = stdout_ops_tbl;
+
     sti();
     return 0;
 }
@@ -212,7 +222,83 @@ write(int32_t fd, const void* buf, int32_t nbytes) {
 
 int32_t 
 open(const uint8_t* filename) {
-	return 0;
+	
+
+	int i; 
+	pcb_t * pcb_pointer;
+	dentry_t entry; 
+	uint32_t dentry_file_type = -1;
+
+	pcb_pointer = get_pcb_ptr();
+
+
+	//Find the index in which the file system is available
+	i = MIN_OPEN_FILE;
+	while(i)
+	{	
+		//Check if maximun number of file is open
+		if( i == MAX_OPEN_FILE )
+			return -1;
+
+		if( pcb_pointer->f_descs[i].flags != FLAG_ACTIVE )
+		{
+			break;
+		}
+
+		i++;
+	}
+
+	pcb_pointer->f_descs[i].flags = FLAG_ACTIVE;
+	pcb_pointer->f_descs[i].file_pos = FILE_POS;
+
+	//Get the dentry and store it in entry
+	read_dentry_by_name(filename, &entry);
+
+	if( entry == -1)
+		return -1;
+	else
+	{
+		dentry_file_type = entry.file_type;
+	}
+
+	if( dentry_file_type == FILE_TYPE_DIR)
+	{
+		if(dir_open(filename) == 0)
+		{	
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = dir_ops_tbl;
+			//inode does not have meaning
+			pcb_pointer->f_descs[i].inode = NULL;
+			
+		}
+		else
+			return -1;
+	}
+	else if ( dentry_file_type == FILE_TYPE_FILE)
+	{
+		if(file_open(filename) == 0)
+		{
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = file_ops_tbl;
+			//Inode only meaningful for file
+			pcb_pointer->f_descs[i].inode = dentry_file_type.inode_num;
+
+		}
+		else
+			return -1;
+	}
+	else if( dentry_file_type == FILE_TYPE_RTC)
+	{
+		if((rtc_open(filename) == 0)
+		{
+			pcb_pointer->f_descs[i].fops_jmp_tb_ptr = rtc__ops_tbl;
+			//inode does not have meaning
+			pcb_pointer->f_descs[i].inode = NULL;
+		}
+		else
+			return -1;
+	}
+
+	//Return the index of the file system
+	return i;
 }
 
 int32_t
@@ -285,6 +371,11 @@ get_pcb_ptr()
         :"cc"
         );
     return pcb_ptr;
+}
+
+int32_t 
+do_nothing() {
+	return -1;
 }
 /*
 Hey Herman, 

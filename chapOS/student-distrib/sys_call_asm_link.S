@@ -6,20 +6,28 @@
 # ECX: 2nd arg
 # EDX: 3rd arg
 main_syscall:
-    pushal
     pushfl
-    cmpl    0x0A, %eax
+    subl    $4, %esp
+    pushal
+    leal    32(%esp), %esi
+    cmpl    $10, %eax
     jg      ret_err
-    cmpl    1, %eax
+    cmpl    $1, %eax
     jl      ret_err
     call    syscall_jmp(%eax)
-    jmp     ret_succ
-ret_err:
-    leal    -1, %eax       # return -1 for error
-ret_succ:
-    popfl
+    movl    %eax, (%esi)
     popal
+    movl    (%esp), %eax
+    addl    $4, %esp
+    popfl
     iret
+ret_err:
+    popal
+    leal    -1, %eax       # return -1 for error
+    addl    $4, %esp
+    popfl
+    iret
+
     
 # The jump table
 syscall_jmp:

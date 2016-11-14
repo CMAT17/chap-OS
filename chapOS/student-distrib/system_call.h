@@ -29,8 +29,18 @@
 #define STACK_8KB           0x2000
 #define PROG_IMAGE_VADDR    0x08048000      
 
+//Flag types
 #define FLAG_ACTIVE		0x00000001
 #define FLAG_INACTIVE	0x00000000
+
+//File Types user level
+#define FILE_POS   		0x00000000
+#define FILE_TYPE_DIR	0x00000001
+#define FILE_TYPE_FILE	0x00000002
+#define FILE_TYPE_RTC	0x00000000
+
+#define FDS_STDIN_IDX	0
+#define FDS_STDOUT_IDX	1
 
 //extern
 int32_t halt(uint8_t status);
@@ -42,11 +52,13 @@ int32_t close(int32_t fd);
 int32_t getargs(uint8_t* buf, int32_t nbytes);
 int32_t vidmap(uint8_t** screen_start);
 
+int32_t do_nothing(); 
+int32_t gen_new_proc_id(void);
 
 /* Following two are for extra credit and later*/
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
-int32_t gen_new_proc_id(void);
+
 
 /*
 typedef struct{
