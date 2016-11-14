@@ -5,7 +5,10 @@
 #include "x86_desc.h"
 #include "lib.h"
 
+//Array to keep track of which processes are active
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
+
+//File operation tables (rtc, file, dir, stdin, stdout, no_file)
 file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
 file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close};
 file_ops_jmp_tb_t dir_ops_tbl = { file_open, file_read, file_write, file_close };
@@ -13,14 +16,21 @@ file_ops_jmp_tb_t stdin_ops_tbl = { open_keyboard, keyboard_read, do_nothing, cl
 file_ops_jmp_tb_t stdout_ops_tbl = { open_keyboard, do_nothing, keyboard_write, close_keyboard};
 file_ops_jmp_tb_t no_file_ops = {do_nothing, do_nothing, do_nothing, do_nothing};
 
+//Keep track the number of active processes
 static uint32_t active_proc_num;
 
-/*Restore
+/* Notes for ourselves:
+	Restore
 	-pcb
 	-esp, ebp
 	-paging structures
 	-tss, esp0
 */
+/* int32_t halt(uint8_t status)
+ * Will terminate the process and close all the files
+ * INPUT: status  
+ * RETURN VALUE: 0, but will never be reach do to iret
+ */
 int32_t 
 halt(uint8_t status) {
 	cli();
@@ -63,7 +73,9 @@ halt(uint8_t status) {
                 );
 	return 0;
 }
-/* Execute()
+
+/* Notes for ourselves:
+ * Execute()
  * 1) Parse command
  * 2) EXE check
  * 3) Reorganize virtual memory
@@ -72,6 +84,12 @@ halt(uint8_t status) {
  ~~ Setup stdin and stdout
  * 6) Context/TSS switch
  * 7) IRET crap
+ */
+/* int32_t execute(const uint8_t* command)
+ * Parse the command for the command name and argument.
+ * Load and execute the new program by setting up a process to handle the new program
+ * INPUT: command  
+ * RETURN VALUE: Return the status of the function
  */
 int32_t 
 execute(const uint8_t* command) {
@@ -82,9 +100,6 @@ execute(const uint8_t* command) {
     uint8_t parsed_arg[]
     int fname_start, fname end;
 */
-
-
-
 	int i = 0;
 	int name_starting_point = -1;
 	int name_ending_point = -1;
@@ -98,6 +113,7 @@ execute(const uint8_t* command) {
     uint32_t entry_point;
     int32_t new_proc_id;
     int32_t proc_stat;
+
 	// The command does not exist
 	if( command == NULL )
 		return -1;
@@ -108,6 +124,7 @@ execute(const uint8_t* command) {
 	//Traverse through the command for the name and argument
 	while(command[i] != NULL_CHAR)
 	{
+		//Look for beginning of the name
 		if( name_starting_point == -1)
 		{
 			if( command[i] == ' ')
@@ -119,6 +136,7 @@ execute(const uint8_t* command) {
 				name_starting_point = i;
 			}
 		} 
+		//Look for the ending of the name and store it in an array
 		else if( name_ending_point == -1)
 		{
 			if( command[i] != ' ')
@@ -133,6 +151,7 @@ execute(const uint8_t* command) {
 				file_name_command[i] = NULL_CHAR;
 			}
 		}
+		//Look for beginning of the arg
 		else if( arg_starting_point == -1)
 		{
 			if( command[i] == ' ')
@@ -144,6 +163,7 @@ execute(const uint8_t* command) {
 				arg_starting_point = i;
 			}
 		} 
+		//Look for the ending of the arg and store it in an array
 		else if( arg_ending_point == -1)
 		{
 			if( command[i] != ' ')
@@ -162,12 +182,9 @@ execute(const uint8_t* command) {
 		}
 		else
 			return -1;
-
-
-
-
 	}
 
+	//Testing of parse
 	printf("The name of command: %s\n", file_name_command );
 	printf("The arg of command: %s\n ", arg_command );
 
@@ -207,6 +224,7 @@ execute(const uint8_t* command) {
         printf("Too many processes\n");
         return -1;
     }
+
     //Load file into virtual memory
     uint32_t len = get_file_size(f_dentry.inode_num);
     printf("%d\n", read_data(f_dentry.inode_num, 0, (uint8_t*)PROG_IMAGE_VADDR, len));
@@ -232,6 +250,7 @@ execute(const uint8_t* command) {
                     : "=r"(proc_PCB->kbp), "=r"(proc_PCB->ksp)
                     : //no inputs
                 );
+
     //Set the values for stdin open
     proc_PCB->f_descs[FDS_STDIN_IDX].flags = FLAG_ACTIVE;
     proc_PCB->f_descs[FDS_STDIN_IDX].fops_jmp_tb_ptr = &stdin_ops_tbl;
@@ -254,6 +273,7 @@ execute(const uint8_t* command) {
         proc_PCB->parent_ksp = parent_PCB->ksp;
         proc_PCB->parent_kbp = parent_PCB->kbp;
     }
+
     //set tss.ss0 and esp0 to hold kernel data segment and
     tss.ss0 = KERNEL_DS;
     tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
@@ -283,49 +303,16 @@ execute(const uint8_t* command) {
     return 0;
 }
 
-int32_t 
-read(int32_t fd, void* buf, int32_t nbytes) {
-
-    pcb_t * pcb_pointer;
-
-    //Check bounds and conditions
-    if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
-        return -1;
-
-    //Get pcb pointer and check if its being open
-    pcb_pointer = get_pcb_ptr();
-    if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
-        return -1;
-
-    //Obtain the correct read format
-    int32_t get_correct_read = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->read(fd, buf ,nbytes);
-    return get_correct_read;
-}
-
-int32_t 
-write(int32_t fd, const void* buf, int32_t nbytes) {
-
-    pcb_t * pcb_pointer;
-
-    //Check bounds and conditions
-    if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
-        return -1;
-
-    //Get pcb pointer and check if its being open
-    pcb_pointer = get_pcb_ptr();
-    if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
-        return -1;
-
-	//Obtain the correct write format
-	int32_t get_correct_write = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->write(fd, buf ,nbytes);
-	return get_correct_write;
-}
-
-
+/*
+* int32_t open(const uint8_t* filename)
+*   Inputs: filename - the file's name to open
+*
+*   Return Value: return the index of the file which the slot is setup for use
+*	Function: Will look for an open slot in the file system to open the file of the pcb
+*/
 int32_t 
 open(const uint8_t* filename) {
 	
-
 	int i; 
 	pcb_t * pcb_pointer;
 	dentry_t entry; 
@@ -333,7 +320,6 @@ open(const uint8_t* filename) {
 	uint32_t check_dentry; 
 
 	pcb_pointer = get_pcb_ptr();
-
 
 	//Find the index in which the file system is available
 	i = MIN_OPEN_FILE;
@@ -343,6 +329,7 @@ open(const uint8_t* filename) {
 		if( i == MAX_OPEN_FILE )
 			return -1;
 
+		//Look for an available file slot
 		if( pcb_pointer->f_descs[i].flags != FLAG_ACTIVE )
 		{
 			break;
@@ -351,6 +338,7 @@ open(const uint8_t* filename) {
 		i++;
 	}
 
+	//Turn that slot active and set up the file position
 	pcb_pointer->f_descs[i].flags = FLAG_ACTIVE;
 	pcb_pointer->f_descs[i].file_pos = FILE_POS;
 
@@ -364,6 +352,7 @@ open(const uint8_t* filename) {
 		dentry_file_type = entry.file_type;
 	}
 
+	//Set up the jmp table pointer and inode depending on the type of the file
 	if( dentry_file_type == FILE_TYPE_DIR)
 	{
 		if(dir_open(filename) == 0)
@@ -405,6 +394,65 @@ open(const uint8_t* filename) {
 	return i;
 }
 
+/*
+* int32_t read(int32_t fd, void* buf, int32_t nbytes)
+*   Inputs: fd - file descriptor index, buf - the buffer, and nbytes - number of bytes
+*
+*   Return Value: return correct value of read
+*	Function: Will read using the correct read type function into the buffer
+*/
+int32_t 
+read(int32_t fd, void* buf, int32_t nbytes) {
+
+    pcb_t * pcb_pointer;
+
+    //Check bounds and conditions
+    if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+        return -1;
+
+    //Get pcb pointer and check if its being open
+    pcb_pointer = get_pcb_ptr();
+    if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
+        return -1;
+
+    //Obtain the correct read format
+    int32_t get_correct_read = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->read(fd, buf ,nbytes);
+    return get_correct_read;
+}
+
+/*
+* int32_t write(int32_t fd, const void* buf, int32_t nbytes)
+*   Inputs: fd - file descriptor index, buf - the buffer, and nbytes - number of bytes
+*
+*   Return Value: return correct value of write
+*	Function: Will write using the correct write type function 
+*/
+int32_t 
+write(int32_t fd, const void* buf, int32_t nbytes) {
+
+    pcb_t * pcb_pointer;
+
+    //Check bounds and conditions
+    if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+        return -1;
+
+    //Get pcb pointer and check if its being open
+    pcb_pointer = get_pcb_ptr();
+    if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
+        return -1;
+
+	//Obtain the correct write format
+	int32_t get_correct_write = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->write(fd, buf ,nbytes);
+	return get_correct_write;
+}
+
+/*
+* int32_t close(int32_t fd)
+*   Inputs: fd - file descriptor index
+*
+*   Return Value: return correct value of close
+*	Function: Will close using the correct close type function 
+*/
 int32_t
 close(int32_t fd) {
 
@@ -426,11 +474,13 @@ close(int32_t fd) {
 	return get_correct_close;
 }
 
+//worry later
 int32_t 
 getargs(uint8_t* buf, int32_t nbytes) {
 	return 0;
 }
 
+//worry later
 int32_t 
 vidmap(uint8_t** screen_start) {
 	return 0;
@@ -446,11 +496,18 @@ sigreturn (void) {
 	return -1;
 }
 
+/*
+* int32_t gen_new_proc_id(void)
+*   Inputs: none
+*
+*   Return Value: return the proccess id
+*	Function: s
+*/
 int32_t
-gen_new_proc_id(void)
-{
+gen_new_proc_id(void) {
     int32_t i;
 
+    //Look through the array to see if any process is available to be used
     for(i=0; i<MAX_PROCESSES;i++)
     {
         if(proc_id_flags[i]==0)
@@ -462,11 +519,18 @@ gen_new_proc_id(void)
     return (-1);
 }
 
+/*
+* pcb_t * get_pcb_ptr()
+*   Inputs: none
+*
+*   Return Value: return the pointer to the pcb
+*	Function: get the pointer to pcb
+*/
 pcb_t *
 get_pcb_ptr()
 {
     pcb_t * pcb_ptr;
-    asm("andl %%esp, %%eax \n"
+    asm ("andl %%esp, %%eax \n"
         :"=a"(pcb_ptr)
         :"a"(PCB_MASK)
         :"cc"
@@ -474,18 +538,17 @@ get_pcb_ptr()
     return pcb_ptr;
 }
 
+/*
+* int32_t do_nothing() 
+*   Inputs: none
+*
+*   Return Value: -1
+*	Function: Does nothing but returns -1 to indicate not doing anything
+*/
 int32_t 
 do_nothing() {
 	return -1;
 }
-/*
-Hey Herman, 
-	This is what you need to know:
-	In the google doc there are some information on 3.3.
-	Aaron worked on file system and pcb.
-	Phong started read and write. 
-	Meet tomorrow 10 am at grainger
-*/
 
 
 
