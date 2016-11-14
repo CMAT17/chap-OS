@@ -15,6 +15,9 @@ file_ops_jmp_tb_t no_file_ops = {do_nothing, do_nothing, do_nothing, do_nothing}
 
 static uint32_t active_proc_num;
 
+//Sandwich added
+extern uint32_t page_dir[PAGE_DIRECTORY_SIZE] __attribute__((aligned(PAGE_ALIGN)));
+
 /*Restore
 	-pcb
 	-esp, ebp
@@ -257,7 +260,20 @@ execute(const uint8_t* command) {
     //set tss.ss0 and esp0 to hold kernel data segment and
     tss.ss0 = KERNEL_DS;
     tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
-    sti();
+	uint32_t temp;
+	asm volatile(
+		"movl %%cr3, %0;"
+		: "=r"(temp)
+	);
+	
+	//Sandwich added
+	tss.cr3 = (uint32_t)page_dir;
+	//printf("CR3: %d\n",temp);
+	//printf("My extern: %d\n",(uint32_t)page_dir);
+	//printf("tss cr3: %d\n",tss.cr3);
+    //End Sandwich added
+	
+	sti();
 
     asm volatile(
                     "cli                        \n"
