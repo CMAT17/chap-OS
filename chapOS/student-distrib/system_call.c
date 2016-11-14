@@ -159,8 +159,18 @@ execute(const uint8_t* command) {
     proc_PCB = (pcb_t*)(PAGE_8MB-STACK_8KB*(new_proc_id + 1));
     proc_PCB->proc_num = new_proc_id;
 
+    asm volatile(
+                    "movl   %%ebp, %0   \n"
+                    "movl   %%esp, %1   \n"
+                    : "=r"(proc_PCB->kbp), "=r"(proc_PCB->ksp)
+                    : //no inputs
+                    : //no clobber
+                );
+    
+
     //obtain entry point
-    entry_point = (uint32_t) f_content;
+    read_data(f_dentry.inode_num, ENTRY_PTW_START, MIN_READ_ELF_SIZE);
+    entry_point = *(uint32_t *) f_content_buf;
 
     //re-organize virtual memory
     proc_stat = new4MB_page();
