@@ -167,10 +167,16 @@ void init_idt()
     //Enable RTC Interrupts
     SET_IDT_ENTRY(idt[RTC], rtc_handler);
 
-    for(i = RTC+1; i<NUM_VEC; i++){
+    for(i = RTC+1; i<SYSCALL_ENTRY; i++){
         SET_IDT_ENTRY(idt[i],generic_handler);
     }
     
+    SET_IDT_ENTRY(idt[SYSCALL_ENTRY],main_syscall);
+
+    for(i = SYSCALL_ENTRY + 1; i<NUM_VEC; i++)
+    {
+        SET_IDT_ENTRY(idt[i],generic_handler);
+    }
 
     //Fill in Segment data for exceptions
     SET_IDT_ENTRY(idt[0], exception_DE);

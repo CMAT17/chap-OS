@@ -32,6 +32,7 @@ entry (unsigned long magic, unsigned long addr)
 {
 	multiboot_info_t *mbi;
 	module_t* file_sys_module;
+	uint8_t * null_filename = NULL;
 
 	/* Clear the screen. */
 	clear();
@@ -169,7 +170,7 @@ entry (unsigned long magic, unsigned long addr)
 	rtc_init();
 
 	//initialize the keyboard
-	open_keyboard();
+	open_keyboard(null_filename);
 	/* Enable interrupts */
 	/* Do not enable the following until after you have set up your
 	 * IDT correctly otherwise QEMU will triple fault and simple close
@@ -190,13 +191,14 @@ entry (unsigned long magic, unsigned long addr)
   char testbuf[33];
   char testfcontents[100];
   int32_t fd = 0;
+  int32_t unused_fd = -1;
   int32_t nbytes = 0;
   int32_t i;
   dentry_t dentry;
   //char writeArray[50] = "This is written message";
   printf("Start keyboard read test. Please type to fill in the buffer\n");
   //write_keyboard(writeArray,50);
-  read_keyboard(testChar,50);
+  keyboard_read(unused_fd,testChar,50);
   printf("The message in the buffer is \"");
   printf("%s\"\n",testChar);
   /*

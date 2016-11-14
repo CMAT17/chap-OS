@@ -10,6 +10,7 @@ uint32_t dir_ops_tbl[NUM_OPS] = { (uint32_t)(file_open),(uint32_t)(file_read),(u
 uint32_t stdin_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(read_keyboard),(uint32_t)(do_nothing),(uint32_t)(close_keyboard)};
 uint32_t stdout_ops_tbl[NUM_OPS] = { (uint32_t)(open_keyboard),(uint32_t)(do_nothing),(uint32_t)(write_keyboard),(uint32_t)(close_keyboard)};
 
+static pcb_t* get_pcb_ptr();
 
 int32_t 
 halt(uint8_t status) {
@@ -43,7 +44,7 @@ execute(const uint8_t* command) {
 	int arg_ending_point = -1;
 	int8_t file_name_command[MAX_NAME_SIZE];
 	int8_t arg_command[MAX_ARG_SIZE];
-    int8_t f_content_buf[MIN_READ_ELF_SIZE];
+    uint8_t f_content_buf[MIN_READ_ELF_SIZE];
     dentry_t f_dentry;
     int32_t f_content = 0;
     uint32_t entry_point;
@@ -153,7 +154,7 @@ execute(const uint8_t* command) {
         return -1;
     }
 
-    proc_PCB = PAGE_8MB-STACK_8KB*(new_proc_id + 1);
+    proc_PCB = (pcb_t*)(PAGE_8MB-STACK_8KB*(new_proc_id + 1));
     proc_PCB->proc_num = new_proc_id;
 
     //obtain entry point
@@ -164,7 +165,7 @@ execute(const uint8_t* command) {
 
     //Load file into virtual memory
     uint32_t len = get_file_size(f_dentry.inode_num);
-    printf("%d\n", read_data(f_dentry.inode_num, 0, PROG_IMAGE_VADDR, len));
+    printf("%d\n", read_data(f_dentry.inode_num, 0, (uint8_t*)PROG_IMAGE_VADDR, len));
 
     //PCB s
 
@@ -195,7 +196,7 @@ read(int32_t fd, void* buf, int32_t nbytes) {
         return -1;
 
     //Obtain the correct read format
-    int32_t get_correct_read = pcb->f_descs[fd].fops_jmp_tb_ptr.read(fd, buf ,nbytes);
+    int32_t get_correct_read = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->read(fd, buf ,nbytes);
     return get_correct_read;
 }
 
@@ -214,7 +215,7 @@ write(int32_t fd, const void* buf, int32_t nbytes) {
         return -1;
 
 	//Obtain the correct write format
-	int32_t get_correct_write = pcb->f_descs[fd].fops_jmp_tb_ptr.write(fd, buf ,nbytes);
+	int32_t get_correct_write = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->write(fd, buf ,nbytes);
 	return get_correct_write;
 }
 
@@ -306,7 +307,7 @@ close(int32_t fd) {
 	pcb_t * pcb_pointer;
 
 	//Check bounds and conditions
-	if( buf == NULL || fd >= MAX_OPEN_FILE || fd < 0)
+	if(fd >= MAX_OPEN_FILE || fd < 0)
 		return -1;
 
 	//Get pcb pointer and check if its being open
@@ -317,7 +318,7 @@ close(int32_t fd) {
 		pcb_pointer->f_descs[fd].flags = FLAG_INACTIVE;
 
 	//Obtain the correct close format
-	int32_t get_correct_close = pcb->f_descs[fd].fops_jmp_tb_ptr.close(fd);
+	int32_t get_correct_close = pcb_pointer->f_descs[fd].fops_jmp_tb_ptr->close(fd);
 	return get_correct_close;
 }
 

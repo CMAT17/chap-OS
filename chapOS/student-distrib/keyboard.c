@@ -80,7 +80,7 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 *   Also set up the buffer for the keyboard
 */
 void
-open_keyboard(){
+open_keyboard(const uint8_t* filename){
 	initialize_clear_buffer();
 	enable_irq(KEYBOARD_IRQ);
 }
@@ -93,7 +93,7 @@ open_keyboard(){
 * Function: close the keyboard with the KEYBOARD_IRQ on the PIC
 */
 void
-close_keyboard(){
+close_keyboard(int32_t fd){
   disable_irq(KEYBOARD_IRQ);
 }
 
@@ -315,6 +315,7 @@ press_other_key(uint8_t key){
 
 	uint8_t actual_key = 0;
   int32_t fd = -1;
+  uint8_t* null_filename = NULL;
   
   	//for testing
   	static uint32_t mul2 = 2;
@@ -356,14 +357,14 @@ press_other_key(uint8_t key){
       {
         if(mul2<1024)
           mul2 *= 2;
-        rtc_write(&mul2,4);
+        rtc_write(fd,&mul2,4);
       }
       //for testing
       if( (actual_key == 'S') || (actual_key == 's') )
       {
         if(mul2>2)
           mul2 /= 2;
-        rtc_write(&mul2,4);
+        rtc_write(fd,&mul2,4);
       }
       if((actual_key == '4')){
         clear();
@@ -372,11 +373,11 @@ press_other_key(uint8_t key){
         set_coordY(Y_ZERO);
         set_coordX(X_ZERO);
         move_curser();
-        rtc_open();
+        rtc_open(null_filename);
         //rtc_write(&mul2,4);
       }
       if((actual_key == '5')){
-        rtc_close();
+        rtc_close(fd);
       }
       //for testing
       if((actual_key == '6')){
