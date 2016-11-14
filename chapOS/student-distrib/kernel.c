@@ -189,7 +189,7 @@ entry (unsigned long magic, unsigned long addr)
   }*/
   char testChar[50];
   char testbuf[33];
-  char testfcontents[100];
+  uint8_t testfcontents[100];
   int32_t fd = 0;
   int32_t unused_fd = -1;
   int32_t nbytes = 0;
@@ -215,7 +215,7 @@ entry (unsigned long magic, unsigned long addr)
   	printf("%s\n",testbuf);
   }
   printf("Start File Read Test \n");
-  read_dentry_by_name("shell", &dentry);
+  read_dentry_by_name((uint8_t*)"shell", &dentry);
   printf("shell\n");
   read_data(dentry.inode_num, 0, testfcontents, 100);
   printf("%s\n", testfcontents);
@@ -233,7 +233,7 @@ entry (unsigned long magic, unsigned long addr)
   */
   //testing div by 0
   //int a = 3/0;
-  
+  /*
   int* dummy = 0x08048000;
   new4MB_page();
   *dummy = 555;
@@ -246,7 +246,7 @@ entry (unsigned long magic, unsigned long addr)
   rm4MB_page();
   printf("%d\n",*dummy);
   rm4MB_page();
-  printf("%d\n",*dummy);
+  printf("%d\n",*dummy);*/
 
   //testing GP
   //int *a = NULL;

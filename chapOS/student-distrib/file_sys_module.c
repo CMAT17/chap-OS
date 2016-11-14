@@ -188,6 +188,11 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 uint32_t get_file_size(uint32_t inode_num)
 {
     inode_t * f_inode;
-    f_inode = inode_start + inode_num*DATA_BLOCK_SIZE;
+    f_inode = (inode_t*)(inode_start + inode_num*DATA_BLOCK_SIZE);
     return f_inode->length;
 }
+
+
+
+
+

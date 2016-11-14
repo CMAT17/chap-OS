@@ -40,7 +40,7 @@
 #define Y_ZERO				0 
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
-void open_keyboard(const uint8_t* filename);
+int32_t open_keyboard( const uint8_t* filename );
 
 //Will retrive a scancode from the keyboard addr port and check each case
 //to make sure the function is an enter, caps, shift, or other character.
@@ -83,11 +83,6 @@ int32_t keyboard_write(int32_t fd, const void* buff, int32_t nbytes);
 
 //Function: Close the keyboard
 //Afterward no return value.
-void close_keyboard(int32_t fd);
-
-int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
-int32_t terminal_write(int32_t fd, const void* buf, int32_t nbytes);
-int32_t terminal_open(const uint8_t* filename);
-int32_t terminal_close(int32_t fd);
+int32_t close_keyboard(int32_t fd);
 
 #endif /* end of _KEYBOARD_H */
