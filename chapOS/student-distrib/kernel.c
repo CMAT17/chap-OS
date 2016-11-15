@@ -187,6 +187,7 @@ entry (unsigned long magic, unsigned long addr)
   for(testtt=0;testtt<100000000;testtt++){
     
   }*/
+  /*
   char testChar[50];
   char testbuf[33];
   uint8_t testfcontents[10000];
@@ -194,13 +195,13 @@ entry (unsigned long magic, unsigned long addr)
   int32_t unused_fd = -1;
   int32_t nbytes = 0;
   int32_t i;
-  dentry_t dentry;
+  dentry_t dentry;*/
   //char writeArray[50] = "This is written message";
-  printf("Start keyboard read test. Please type to fill in the buffer\n");
+  //printf("Start keyboard read test. Please type to fill in the buffer\n");
   //write_keyboard(writeArray,50);
-  keyboard_read(unused_fd,testChar,50);
-  printf("The message in the buffer is \"");
-  printf("%s\"\n",testChar);
+  //keyboard_read(unused_fd,testChar,50);
+  //printf("The message in the buffer is \"");
+  //printf("%s\"\n",testChar);
   /*
   printf("Start RTC read test\n");
   while(1){
@@ -208,7 +209,7 @@ entry (unsigned long magic, unsigned long addr)
     printf("1");
   }
   */
-
+/*
   printf("Start Directory Read Test\n");
   for(i = 0; i<20; i++){
   	dir_read(fd, testbuf, nbytes);
@@ -220,7 +221,9 @@ entry (unsigned long magic, unsigned long addr)
   uint32_t len = get_file_size(dentry.inode_num);
   printf("%d\n", len);
   printf("%d\n",read_data(dentry.inode_num, 0, testfcontents, len));
-  printf("%s\n", testfcontents);
+  printf("%s\n", testfcontents);*/
+  char writeArray[50] = "This is written message\n";
+  keyboard_write(0,writeArray,strlen(writeArray));//50);
   execute((uint8_t*)"shell");
 //---------------------------End Sandwich testing------------------------------
   //uint8_t testTXT[100] = "     shell       This is Args";

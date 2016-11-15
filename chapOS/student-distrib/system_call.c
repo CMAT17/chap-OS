@@ -187,9 +187,9 @@ execute(const uint8_t* command) {
 			return -1;
 	}
 
-	//Testing of parse
-	printf("The name of command: %s\n", file_name_command );
-	printf("The arg of command: %s\n ", arg_command );
+  //Testing of parse
+  //printf("The name of command: %s\n", file_name_command );
+  //printf("The arg of command: %s\n ", arg_command );
 
     //Make sure that file exists
     if(read_dentry_by_name((uint8_t *) file_name_command, & f_dentry))

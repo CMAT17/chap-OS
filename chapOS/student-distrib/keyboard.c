@@ -509,15 +509,15 @@ keyboard_read(int32_t fd, void* buf, int32_t nbytes){
 int32_t 
 keyboard_write(int32_t fd, const void* buff, int32_t nbytes){
   int i;
-  for(i=0; i<nbytes; i++){
+  /*for(i=0; i<nbytes; i++){
     buffer_key[i] = *(unsigned char*)(buff+i);
   }
   buffer_index = i;
   if(i<KEYBOARD_NUM_KEYS-1)
-    buffer_key[i] = KEY_NULL;
-  /*for(i=0; i<nbytes; i++){
+    buffer_key[i] = KEY_NULL;*/
+  for(i=0; i<nbytes; i++){
     putc(*(unsigned char*)(buff+i));
-  }*/
+  }
   return i;
 }
 
