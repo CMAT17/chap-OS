@@ -222,8 +222,8 @@ entry (unsigned long magic, unsigned long addr)
   printf("%d\n", len);
   printf("%d\n",read_data(dentry.inode_num, 0, testfcontents, len));
   printf("%s\n", testfcontents);*/
-  char writeArray[50] = "This is written message\n";
-  keyboard_write(0,writeArray,strlen(writeArray));//50);
+  //char writeArray[50] = "This is written message\n";
+  //keyboard_write(0,writeArray,strlen(writeArray));//50);
   execute((uint8_t*)"shell");
 //---------------------------End Sandwich testing------------------------------
   //uint8_t testTXT[100] = "     shell       This is Args";
