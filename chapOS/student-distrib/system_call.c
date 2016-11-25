@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "keyboard.h"
 
 //Array to keep track of which processes are active
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
@@ -48,7 +49,7 @@ halt(uint8_t status) {
     proc_id_flags[active_proc_num] = FLAG_INACTIVE;
 
     //close all files
-    for(i = 2; i<MAX_FILES; i++)
+    for(i = 0; i<MAX_FILES; i++)
     {
         if(cur_PCB->f_descs[i].flags == FLAG_ACTIVE)
         {
@@ -58,6 +59,11 @@ halt(uint8_t status) {
     }
 
     active_proc_num = cur_PCB->parent_proc_num;
+    
+    //closing involves closing thet keyboard IRQ line, so it must be reenabled
+
+    enable_irq(KEYBOARD_IRQ);
+
 
     rm4MB_page();
 
@@ -313,9 +319,9 @@ execute(const uint8_t* command) {
   );
   printf("EFlags: %x\n",myFl);*/
 
-  sti();
+        sti();
 
-    asm volatile(
+        asm volatile(
                     "cli                        \n"
                     "movw   $0x2B,%%ax          \n"   //User data segment index
                     "movw   %%ax, %%ds          \n"   //push to data segment register
