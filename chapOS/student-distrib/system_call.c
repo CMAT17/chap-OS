@@ -8,7 +8,6 @@
 
 //Array to keep track of which processes are active
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
-
 //File operation tables (rtc, file, dir, stdin, stdout, no_file)
 file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
 file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close};
@@ -43,7 +42,6 @@ halt(uint8_t status) {
     int32_t i;
     pcb_t * cur_PCB;
 
-
     cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num +1));
     //clear process for use
     proc_id_flags[active_proc_num] = FLAG_INACTIVE;
@@ -66,9 +64,9 @@ halt(uint8_t status) {
 
 
     rm4MB_page();
-
-    tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num);
-
+    printf("%d\n", tss.esp0);
+    tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num+1);
+    printf("%d\n", tss.esp0);
 	sti();
     
     asm volatile(
@@ -77,6 +75,10 @@ halt(uint8_t status) {
                     "movb   %0, %%al            \n"
                     "movl   %1, %%ebp           \n"
                     "movl   %2, %%esp           \n"
+                    //"cmpl   %%eax, $1           \n"
+                    //"jne    RETURN_VAL_SET      \n"
+                    //"movl   $256,%%eax          \n"
+                    //"RETURN_VAL_SET:            \n"
                     "jmp    RET_FROM_IRET       \n"
                     :
                     : "r"(status), "r"(cur_PCB->parent_kbp), "r"(cur_PCB->parent_ksp)
@@ -290,8 +292,9 @@ execute(const uint8_t* command) {
 
   //set tss.ss0 and esp0 to hold kernel data segment and
   tss.ss0 = KERNEL_DS;
+  printf("%d\n",tss.esp0);
   tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
-
+  printf("%d\n",tss.esp0);
   //Sandwich added
   /*
   uint32_t temp;
