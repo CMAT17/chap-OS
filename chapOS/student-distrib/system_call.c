@@ -48,7 +48,7 @@ halt(uint8_t status) {
     proc_id_flags[active_proc_num] = FLAG_INACTIVE;
 
     //close all files
-    for(i = 0; i<MAX_FILES; i++)
+    for(i = 2; i<MAX_FILES; i++)
     {
         if(cur_PCB->f_descs[i].flags == FLAG_ACTIVE)
         {
@@ -358,7 +358,7 @@ open(const uint8_t* filename) {
 
   //Find the index in which the file system is available
   i = MIN_OPEN_FILE;
-  while(i)
+  while(i) 
   {	
     //Check if maximun number of file is open
     if( i == MAX_OPEN_FILE )
