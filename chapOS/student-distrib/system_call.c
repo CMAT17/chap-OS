@@ -5,6 +5,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "keyboard.h"
+#include "i8259.h"
 
 //Array to keep track of which processes are active
 static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
@@ -38,53 +39,52 @@ extern uint32_t page_dir[PAGE_DIRECTORY_SIZE] __attribute__((aligned(PAGE_ALIGN)
  */
 int32_t 
 halt(uint8_t status) {
-	cli();
-    int32_t i;
-    pcb_t * cur_PCB;
+  cli();
+  int32_t i;
+  pcb_t * cur_PCB;
 
-    cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num +1));
-    //clear process for use
-    proc_id_flags[active_proc_num] = FLAG_INACTIVE;
+  cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
+  //clear process for use
+  proc_id_flags[active_proc_num] = FLAG_INACTIVE;
 
-    //close all files
-    for(i = 0; i<MAX_FILES; i++)
-    {
-        if(cur_PCB->f_descs[i].flags == FLAG_ACTIVE)
-        {
-            close(i);
-        }
-        cur_PCB->f_descs[i].fops_jmp_tb_ptr = &no_file_ops;
-    }
+  //close all files
+  for(i = 0; i<MAX_FILES; i++){
+    if(cur_PCB->f_descs[i].flags == FLAG_ACTIVE)
+      close(i);
+    cur_PCB->f_descs[i].fops_jmp_tb_ptr = &no_file_ops;
+  }
 
-    active_proc_num = cur_PCB->parent_proc_num;
-    
-    //closing involves closing thet keyboard IRQ line, so it must be reenabled
+  active_proc_num = cur_PCB->parent_proc_num;
+  
+  //closing involves closing thet keyboard IRQ line, so it must be reenabled
 
-    enable_irq(KEYBOARD_IRQ);
+  enable_irq(KEYBOARD_IRQ);
 
-
-    rm4MB_page();
-    printf("%d\n", tss.esp0);
-    tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num+1);
-    printf("%d\n", tss.esp0);
-	sti();
-    
-    asm volatile(
-                    "cli                        \n"
-                    "xorl   %%eax,%%eax         \n"
-                    "movb   %0, %%al            \n"
-                    "movl   %1, %%ebp           \n"
-                    "movl   %2, %%esp           \n"
-                    //"cmpl   %%eax, $1           \n"
-                    //"jne    RETURN_VAL_SET      \n"
-                    //"movl   $256,%%eax          \n"
-                    //"RETURN_VAL_SET:            \n"
-                    "jmp    RET_FROM_IRET       \n"
-                    :
-                    : "r"(status), "r"(cur_PCB->parent_kbp), "r"(cur_PCB->parent_ksp)
-                    :"cc"
-                );
-	return 0;
+  rm4MB_page();
+  //printf("%d\n", tss.esp0);
+  tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
+  //printf("%d\n", tss.esp0);
+  //sti();
+  
+  asm volatile(
+                  "cli                        \n"
+                  "xorl   %%eax,%%eax         \n"
+                  "movl   %0, %%eax            \n"
+                  "andl   $0xFF, %%eax        \n"
+                  //"movl   $1, %%eax            \n"
+                  "movl   %1, %%ebp           \n"
+                  "movl   %2, %%esp           \n"
+                  //"cmpl   %%eax, $1           \n"
+                  //"jne    RETURN_VAL_SET      \n"
+                  //"movl   $256,%%eax          \n"
+                  //"RETURN_VAL_SET:            \n"
+                  "jmp    RET_FROM_IRET       \n"
+                  :
+                  : "r"((uint32_t)status), "r"(cur_PCB->kbp), "r"(cur_PCB->ksp)
+                  :"cc"
+              );
+  //printf("test");
+  return 0;
 }
 
 /* Notes for ourselves:
@@ -204,7 +204,7 @@ execute(const uint8_t* command) {
   //Make sure that file exists
   if(read_dentry_by_name((uint8_t *) file_name_command, & f_dentry))
   {
-    printf ("Shits done fucked up\n");
+    //printf ("Shits done fucked up\n");
     return -1;
   }
 
@@ -277,7 +277,7 @@ execute(const uint8_t* command) {
 
   strcpy((int8_t*)(proc_PCB->arg_buff), arg_command);
 
-  if(!new_proc_id)
+  if(new_proc_id==0)
   {
     proc_PCB->parent_proc_num = new_proc_id;
     proc_PCB->parent_ksp = proc_PCB->ksp;
@@ -286,66 +286,47 @@ execute(const uint8_t* command) {
   else
   {
     parent_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(proc_PCB->proc_num));
+    proc_PCB->parent_proc_num = parent_PCB->proc_num;
     proc_PCB->parent_ksp = parent_PCB->ksp;
     proc_PCB->parent_kbp = parent_PCB->kbp;
   }
 
   //set tss.ss0 and esp0 to hold kernel data segment and
   tss.ss0 = KERNEL_DS;
-  printf("%d\n",tss.esp0);
-  tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id+1);
-  printf("%d\n",tss.esp0);
+  //printf("%d\n",tss.esp0);
+  tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
+  //printf("%d\n",tss.esp0);
   //Sandwich added
-  /*
-  uint32_t temp;
-  asm volatile(
-    "movl %%cr3, %0;"
-    : "=r"(temp)
-  );*/
-  tss.cr3 = (uint32_t)page_dir;
-  //printf("CR3: %d\n",temp);
-  //printf("My extern: %d\n",(uint32_t)page_dir);
-  //printf("tss cr3: %d\n",tss.cr3);
-    //End Sandwich added
-  /*printf("entry_point: %x\n",entry_point);
-  uint32_t* temp = (uint32_t*)0x080482e8;
-  *temp = 55555;
-  printf("temp: %d\n",*temp);
-  printf("addr: %x\n",temp);
-  printf("entry_point: %d\n",*(uint32_t*)entry_point);*/
+  
+  //tss.cr3 = (uint32_t)page_dir;
+
+  //sti();
 /*
-  uint32_t myFl;
   asm volatile(
-    "pushfl;"
-    "popl %0"
-    :"=r"(myFl)
-  );
-  printf("EFlags: %x\n",myFl);*/
-
-        sti();
-
-        asm volatile(
-                    "cli                        \n"
-                    "movw   $0x2B,%%ax          \n"   //User data segment index
-                    "movw   %%ax, %%ds          \n"   //push to data segment register
-                    "pushl  $0x2B               \n"   //push user data segment to stack
-                    "movl   $0x083FFFFC, %%eax  \n"   //push 4-byte aligned bottom of stack
-                    "pushl  %%eax               \n"   
-                    "pushf                      \n"   //push eflags
-                    "pushl  $0x23               \n"   //push user code segment
-                    "movl   %0, %%ebx           \n"   //move entry point into ebx, to be pushed
-                    "pushl  %%ebx               \n"
-                    "iret                       \n"
-                    "RET_FROM_IRET:             \n"
-                    "leave                      \n"
-                    "sti                        \n"
-                    "ret                        \n"
-                    : /*no outputs*/
-                    : "r"(entry_point)
-                    : "%ebx", "%eax"
-                    );
-
-    return 0;
+              "cli                        \n"
+              "movw   $0x2B,%%ax          \n"   //User data segment index
+              "movw   %%ax, %%ds          \n"   //push to data segment register
+              "pushl  $0x2B               \n"   //push user data segment to stack
+              "movl   $0x083FFFFC, %%eax  \n"   //push 4-byte aligned bottom of stack
+              "pushl  %%eax               \n"   
+              "pushfl                     \n"   //push eflags
+              "popl   %%eax               \n"
+              "orl    $0x4200, %%eax      \n"
+              "pushl  %%eax               \n"
+              "pushl  $0x23               \n"   //push user code segment
+              "movl   %0, %%ebx           \n"   //move entry point into ebx, to be pushed
+              "pushl  %%ebx               \n"
+              "iret                       \n"
+              "RET_FROM_IRET:             \n"
+              "leave                      \n"
+              "sti                        \n"
+              //"ret                        \n"
+              : //no outputs
+              : "r"(entry_point)
+              : "cc", "%ebx", "%eax"
+              );*/
+  asm volatile("movl %0, %%ebx;jmp _execute_iret\n"::"r"(entry_point):"%ebx");
+  return 0;
 }
 
 /*
@@ -579,7 +560,7 @@ get_pcb_ptr()
       :"cc"
       );
   return pcb_ptr;*/
-  return (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num +1));
+  return (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
 }
 
 /*

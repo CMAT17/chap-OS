@@ -1,4 +1,4 @@
-.globl main_syscall
+.globl main_syscall, _execute_iret, RET_FROM_IRET
 
 # The main system call function that will call correspond to the EAX
 # EAX: The number of system call to call
@@ -8,7 +8,7 @@
 main_syscall:
     cli
     pushfl
-    subl    $4, %esp
+    #subl    $4, %esp
     pushal
     leal    32(%esp), %esi
     cmpl    $10, %eax
@@ -16,10 +16,12 @@ main_syscall:
     cmpl    $1, %eax
     jl      ret_err
     call    *syscall_jmp(,%eax,4)
-    movl    %eax, (%esi)
+    #movl    %eax, (%esi)
+    movl    %eax, (main_syscall_retval)
     popal
-    movl    (%esp), %eax
-    addl    $4, %esp
+    #movl    (%esp), %eax
+    #addl    $4, %esp
+    movl    (main_syscall_retval), %eax
     popfl
     sti
     iret
@@ -31,6 +33,9 @@ ret_err:
     sti
     iret
 
+.align 4
+main_syscall_retval:
+  .long 0
     
 # The jump table
 syscall_jmp:
@@ -118,3 +123,26 @@ _vidmap:
     cli
     popl    %ebx
     ret
+
+_execute_iret:
+  cli
+  movw   $0x2B,%ax
+  movw   %ax, %ds
+  pushl  $0x2B
+  movl   $0x083FFFFC, %eax
+  pushl  %eax
+  pushfl
+  popl   %eax
+  orl    $0x4200, %eax
+  pushl  %eax
+  pushl  $0x23
+  #movl   %0, %ebx
+  pushl  %ebx
+  iret
+RET_FROM_IRET:
+  leave
+  sti
+  ret
+
+
+
