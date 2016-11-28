@@ -30,6 +30,8 @@
 #define PROG_IMAGE_VADDR    0x08048000
 #define ENTRY_PTW_START     24      
 #define MAX_FILES           8
+#define USER_IMG_START      0x8000000
+#define USER_IMG_END        0x8400000
 //Flag types
 #define FLAG_ACTIVE		0x00000001
 #define FLAG_INACTIVE	0x00000000

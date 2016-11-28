@@ -518,11 +518,11 @@ getargs(uint8_t* buf, int32_t nbytes) {
 //worry later
 int32_t 
 vidmap(uint8_t** screen_start){
-  if((uint32_t)screen_start<0x8000000||(uint32_t)screen_start>=0x8400000)
+  if((uint32_t)screen_start<USER_IMG_START||(uint32_t)screen_start>=USER_IMG_END)
     return -1;
-  new_userVID_page((uint8_t*)0x8400000);
-  *screen_start = (uint8_t*)0x8400000;
-  return 0x8400000;
+  new_userVID_page((uint8_t*)USER_IMG_END); //132MB
+  *screen_start = (uint8_t*)USER_IMG_END;
+  return USER_IMG_END;
 }
 
 /* Following two are for extra credit and later*/
