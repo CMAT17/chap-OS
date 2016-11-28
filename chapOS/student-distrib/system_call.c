@@ -62,7 +62,16 @@ halt(uint8_t status) {
 
   rm4MB_page();
   //printf("%d\n", tss.esp0);
-  tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
+  //tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
+  
+  //if(active_proc_num==0)
+    asm volatile(
+                "movl %%esp, %0   \n"
+                : "=r"(tss.esp0)
+    );
+  //else
+    //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
+  
   //printf("%d\n", tss.esp0);
   //sti();
   
@@ -281,7 +290,15 @@ execute(const uint8_t* command) {
   //set tss.ss0 and esp0 to hold kernel data segment and
   tss.ss0 = KERNEL_DS;
   //printf("%d\n",tss.esp0);
-  tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
+  
+  //if(active_proc_num==0)
+    asm volatile(
+                "movl %%esp, %0   \n"
+                : "=r"(tss.esp0)
+    );
+  //else
+    //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
+  
   //printf("%d\n",tss.esp0);
   //Sandwich added
   

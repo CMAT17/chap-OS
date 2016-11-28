@@ -224,7 +224,8 @@ entry (unsigned long magic, unsigned long addr)
   printf("%s\n", testfcontents);*/
   //char writeArray[50] = "This is written message\n";
   //keyboard_write(0,writeArray,strlen(writeArray));//50);
-  execute((uint8_t*)"shell");
+  while(1)
+    execute((uint8_t*)"shell");
 //---------------------------End Sandwich testing------------------------------
   //uint8_t testTXT[100] = "     shell       This is Args";
   //execute(testTXT);
