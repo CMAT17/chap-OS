@@ -20,9 +20,11 @@ uint8_t num_process;
 //Input: vir_addr - The virtual addr that wants to be mapped to the actual video memory
 //Return: always return 0
 int32_t new_userVID_page(void* vir_addr){
+  //Set a page directory entry corresponds to the vir_addr to be enabled with user-level accessible
   page_dir[(uint32_t)vir_addr>>22] = ((uint32_t)user_page_table) | ENABLE_USER_ENTRY;
+  //Set a page table entry corresponds to the vir_addr to be enabled with user-level accessible
   user_page_table[((uint32_t)vir_addr>>12)&MASK_10_BITS] = VIDEO | ENABLE_USER_ENTRY;//0x8400007;//0x8400007 | 7;
-  paging_setCR();
+  paging_setCR();     //Flush TLB
   return 0;
 }
 
