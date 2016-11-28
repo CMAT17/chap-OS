@@ -12,7 +12,7 @@ static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
 //File operation tables (rtc, file, dir, stdin, stdout, no_file)
 file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
 file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close};
-file_ops_jmp_tb_t dir_ops_tbl = { file_open, file_read, file_write, file_close };
+file_ops_jmp_tb_t dir_ops_tbl = { dir_open, dir_read, dir_write, dir_close };
 file_ops_jmp_tb_t stdin_ops_tbl = { open_keyboard, keyboard_read, do_nothing, close_keyboard };
 file_ops_jmp_tb_t stdout_ops_tbl = { open_keyboard, do_nothing, keyboard_write, close_keyboard};
 file_ops_jmp_tb_t no_file_ops = {do_nothing, do_nothing, do_nothing, do_nothing};
