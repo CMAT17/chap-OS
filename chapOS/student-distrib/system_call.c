@@ -58,7 +58,7 @@ halt(uint8_t status) {
   
   //closing involves closing thet keyboard IRQ line, so it must be reenabled
 
-  enable_irq(KEYBOARD_IRQ);
+  //enable_irq(KEYBOARD_IRQ);
 
   rm4MB_page();
   //printf("%d\n", tss.esp0);
