@@ -17,7 +17,7 @@ uint8_t num_process;
 
 int32_t new_userVID_page(void* vir_addr){
   page_dir[(uint32_t)vir_addr>>22] = ((uint32_t)user_page_table) | 7;
-  page_table[((uint32_t)vir_addr>>12)&0x3ff] = 0x8400007;//0x8400007 | 7;
+  user_page_table[((uint32_t)vir_addr>>12)&0x3ff] = VIDEO | 7;//0x8400007;//0x8400007 | 7;
   return 0;
 }
 
