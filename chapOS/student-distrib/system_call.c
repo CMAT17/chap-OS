@@ -517,12 +517,12 @@ getargs(uint8_t* buf, int32_t nbytes) {
 
 //worry later
 int32_t 
-vidmap(uint8_t** screen_start) {
-    //if(screen_start<PAGE_128MB || screen_start>(PAGE_128MB+PAGE_4MB)
-      //  return -1;
-
-
-	return 0;
+vidmap(uint8_t** screen_start){
+  if((uint32_t)screen_start<0x8000000||(uint32_t)screen_start>=0x8400000)
+    return -1;
+  new_userVID_page((uint8_t*)0x8400000);
+  *screen_start = (uint8_t*)0x8400000;
+  return 0x8400000;
 }
 
 /* Following two are for extra credit and later*/

@@ -35,4 +35,7 @@ int32_t new4MB_page(void);
 //Tear down 4MB page for the program
 int32_t rm4MB_page(void);
 
+//Create user level video mapping page
+int32_t new_userVID_page(void* vir_addr);
+
 #endif
