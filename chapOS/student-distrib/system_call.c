@@ -338,6 +338,16 @@ open(const uint8_t* filename) {
         return -1;
     }
 
+    //Get the dentry and store it in entry and check if it work
+  check_dentry = read_dentry_by_name(filename, &entry);
+
+  if( check_dentry == -1)
+    return -1;
+  else
+  {
+    dentry_file_type = entry.file_type;
+  }
+
   //Find the index in which the file system is available
   i = MIN_OPEN_FILE;
   while(i) 
@@ -359,15 +369,6 @@ open(const uint8_t* filename) {
   pcb_pointer->f_descs[i].flags = FLAG_ACTIVE;
   pcb_pointer->f_descs[i].file_pos = FILE_POS;
 
-  //Get the dentry and store it in entry and check if it work
-  check_dentry = read_dentry_by_name(filename, &entry);
-
-  if( check_dentry == -1)
-    return -1;
-  else
-  {
-    dentry_file_type = entry.file_type;
-  }
 
   //Set up the jmp table pointer and inode depending on the type of the file
   if( dentry_file_type == FILE_TYPE_DIR)
