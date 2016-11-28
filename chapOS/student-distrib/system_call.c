@@ -74,10 +74,10 @@ halt(uint8_t status) {
                   //"movl   $1, %%eax            \n"
                   "movl   %1, %%ebp           \n"
                   "movl   %2, %%esp           \n"
-                  //"cmpl   %%eax, $1           \n"
-                  //"jne    RETURN_VAL_SET      \n"
-                  //"movl   $256,%%eax          \n"
-                  //"RETURN_VAL_SET:            \n"
+                  "cmpl   $0x00000001,%%eax   \n"
+                  "jne    RETURN_VAL_SET      \n"
+                  "movl   $256,%%eax          \n"
+                  "RETURN_VAL_SET:            \n"
                   "jmp    RET_FROM_IRET       \n"
                   :
                   : "r"((uint32_t)status), "r"(cur_PCB->kbp), "r"(cur_PCB->ksp)
@@ -96,7 +96,7 @@ halt(uint8_t status) {
  * 5) PCB
  ~~ Setup stdin and stdout
  * 6) Context/TSS switch
- * 7) IRET crap
+ * 7) IRET crap 
  */
 /* int32_t execute(const uint8_t* command)
  * Parse the command for the command name and argument.
@@ -221,7 +221,7 @@ execute(const uint8_t* command) {
   f_content |= f_content_buf[MIN_READ_ELF_SIZE-1];
   
   if(f_content != ASCII_ELF){
-    printf("What the fuck man \n");
+    printf(" \n");
     return -1;
   }
   
@@ -499,6 +499,20 @@ close(int32_t fd) {
 //worry later
 int32_t 
 getargs(uint8_t* buf, int32_t nbytes) {
+    if(buf == NULL)
+    {
+        return -1;
+    }
+
+    pcb_t * getargs_pcb = (pcb_t *) PAGE_8MB-STACK_8KB*(active_proc_num+1);
+
+    if(nbytes < (uint32_t)strlen((int8_t *)getargs_pcb->arg_buff))
+    {
+        return -1;
+    }
+
+    strcpy((int8_t *)buf, (int8_t *)getargs_pcb->arg_buff);
+
 	return 0;
 }
 

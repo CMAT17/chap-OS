@@ -53,7 +53,7 @@ static void exception_PF(){
         :
         : "cc" 
         );
-    printf("Page Fault at %d", cr2);
+    printf("Page Fault at %d\n", cr2);
     halt(EXCEPT_RETVAL);
 }
 
