@@ -315,16 +315,16 @@ press_bskp() {
 void
 press_other_key(uint8_t key){
 
-	uint8_t actual_key = 0;
-  int32_t fd = -1;
-  uint8_t* null_filename = NULL;
+  uint8_t actual_key = 0;
+  //int32_t fd = -1;
+  //uint8_t* null_filename = NULL;
   
-  	//for testing
-  	static uint32_t mul2 = 2;
+  //for testing
+  //static uint32_t mul2 = 2;
 
-	//If key is not in the keyboard array than it does not need to be consider
-	if(NUM_ACTUAL_MAP_KEYS <= key)
-		return;
+  //If key is not in the keyboard array than it does not need to be consider
+  if(NUM_ACTUAL_MAP_KEYS <= key)
+    return;
 
   //Get the key that is being map to scancode_array
   actual_key = scancode_array[keyboard_mode][key];
@@ -353,7 +353,7 @@ press_other_key(uint8_t key){
         set_coordX(X_ZERO);
         move_curser();
       }
-      
+      /*
       //for testing Sandwich
       if( (actual_key == 'w') || (actual_key == 'W') )
       {
@@ -397,7 +397,8 @@ press_other_key(uint8_t key){
         for(i=0;i<buffer_index&&my_test_buf[i]!=KEY_NULL;i++)
           putc(my_test_buf[i]);
         
-      }/* While loop inside interrupt is crashing the system
+      }
+      //While loop inside interrupt is crashing the system
       if((actual_key == '7')){
         clear();
         set_coordY(Y_ZERO);

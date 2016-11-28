@@ -132,61 +132,46 @@ execute(const uint8_t* command) {
     return -1;
 
   // Parsing the Program Name
+  
+  for(i=0;i<MAX_NAME_SIZE;i++)
+    file_name_command[i] = NULL_CHAR;
+  for(i=0;i<MAX_ARG_SIZE;i++)
+    arg_command[i] = NULL_CHAR;
   i = 0;
-
   //Traverse through the command for the name and argument
-  while(command[i] != NULL_CHAR)
-  {
+  while(command[i] != NULL_CHAR){
     //Look for beginning of the name
-    if( name_starting_point == -1)
-    {
+    if( name_starting_point == -1){
       if( command[i] == ' ')
-      {
         i++;
-      }
       else
-      {
         name_starting_point = i;
-      }
     } 
     //Look for the ending of the name and store it in an array
-    else if( name_ending_point == -1)
-    {
-      if( command[i] != ' ')
-      {
+    else if( name_ending_point == -1){
+      if( command[i] != ' '){
         file_name_command[i-name_starting_point] = (int8_t)command[i];
         i++;
-
       }
-      else
-      {
+      else{
         name_ending_point = i;
-        file_name_command[i] = NULL_CHAR;
+        file_name_command[i-name_starting_point] = NULL_CHAR;
       }
     }
     //Look for beginning of the arg
-    else if( arg_starting_point == -1)
-    {
+    else if( arg_starting_point == -1){
       if( command[i] == ' ')
-      {
         i++;
-      }
       else
-      {
         arg_starting_point = i;
-      }
     } 
     //Look for the ending of the arg and store it in an array
-    else if( arg_ending_point == -1)
-    {
-      if( command[i] != ' ')
-      {
+    else if( arg_ending_point == -1){
+      if( command[i] != ' '){
         arg_command[i-arg_starting_point] = (int8_t)command[i];
         i++;
       }
-      else
-      {
-
+      else{
         arg_ending_point = i;
         arg_command[i-arg_starting_point] = NULL_CHAR; 
         printf("See arg Space\n");
