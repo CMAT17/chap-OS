@@ -43,6 +43,9 @@
 #define FDS_STDIN_IDX	0
 #define FDS_STDOUT_IDX	1
 
+#define FD_STDIN        0
+#define FD_STDOUT       1
+
 //extern
 int32_t halt(uint8_t status);
 int32_t execute(const uint8_t* command);

@@ -262,7 +262,7 @@ execute(const uint8_t* command) {
 
   strcpy((int8_t*)(proc_PCB->arg_buff), arg_command);
 
-  proc_PCB->canary = -32;
+  //proc_PCB->canary = -32;
 
   if(new_proc_id==0)
   {
@@ -332,6 +332,11 @@ open(const uint8_t* filename) {
   uint32_t check_dentry; 
 
   pcb_pointer = get_pcb_ptr();
+
+  if(filename[0] == NULL_CHAR)
+    {
+        return -1;
+    }
 
   //Find the index in which the file system is available
   i = MIN_OPEN_FILE;
@@ -468,9 +473,15 @@ close(int32_t fd) {
   pcb_t * pcb_pointer;
 
   //Check bounds and conditions
-  if(fd >= MAX_OPEN_FILE || fd < 0)
-    return -1;
+    if(fd >= MAX_OPEN_FILE || fd < 0)
+    {
+        return -1;
+    }
 
+    if(fd == FD_STDIN || fd == FD_STDOUT)
+    {
+        return -1;
+    }
   //Get pcb pointer and check if its being open
   pcb_pointer = get_pcb_ptr();
   if( pcb_pointer->f_descs[fd].flags != FLAG_ACTIVE)
@@ -507,6 +518,10 @@ getargs(uint8_t* buf, int32_t nbytes) {
 //worry later
 int32_t 
 vidmap(uint8_t** screen_start) {
+    //if(screen_start<PAGE_128MB || screen_start>(PAGE_128MB+PAGE_4MB)
+      //  return -1;
+
+
 	return 0;
 }
 
