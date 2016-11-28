@@ -292,10 +292,10 @@ execute(const uint8_t* command) {
   //printf("%d\n",tss.esp0);
   
   //if(active_proc_num==0)
-    asm volatile(
-                "movl %%esp, %0   \n"
-                : "=r"(tss.esp0)
-    );
+  asm volatile(
+              "movl %%esp, %0   \n"
+              : "=r"(tss.esp0)
+  );
   //else
     //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
   
