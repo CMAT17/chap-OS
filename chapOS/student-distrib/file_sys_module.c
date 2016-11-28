@@ -46,14 +46,14 @@ int32_t file_sys_write(int32_t fd, const void* buf, int32_t nbytes)
  */
 int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
 {
-    int file_not_found = 1;
+    int file_not_found = FILE_NOT_FOUND;
     int i = 0;
 
     //iterate through directory entries until fname matches the dentry filename
     while(file_not_found == 1 && i < MAX_DENTRY_NUM)
     {
         if(strncmp((int8_t*)fname,(int8_t*) boot_block_ptr->dir_entries[i].file_name, FILE_NAME_SIZE) == 0){
-            file_not_found = 0;
+            file_not_found = FILE_FOUND;
             //copy file name
             strncpy((int8_t*)dentry->file_name, (int8_t*)fname, FILE_NAME_SIZE);
 
@@ -67,7 +67,7 @@ int32_t read_dentry_by_name(const uint8_t* fname, dentry_t* dentry)
     }
 
     //return -1 if file is nonexistent 
-    return (file_not_found == 1 ? -1 : 0); 
+    return (file_not_found == FILE_NOT_FOUND ? -1 : 0); 
 }
 
 /*
@@ -85,12 +85,12 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
         return -1;
     }
 
-    //fills in dentry with file name, type, and inode number
+    //check if filename is actually valid and not empt
     if((int8_t)boot_block_ptr->dir_entries[index].file_name[0]=='\0')
     {
         return -1;
     }
-
+    ///fills in dentry with file name, type, and inode number
     strncpy((int8_t*)dentry->file_name, (int8_t*)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
 
     dentry->file_type = boot_block_ptr->dir_entries[index].file_type;
