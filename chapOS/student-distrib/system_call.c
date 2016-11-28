@@ -277,6 +277,8 @@ execute(const uint8_t* command) {
 
   strcpy((int8_t*)(proc_PCB->arg_buff), arg_command);
 
+  proc_PCB->canary = -32;
+
   if(new_proc_id==0)
   {
     proc_PCB->parent_proc_num = new_proc_id;
@@ -504,7 +506,8 @@ getargs(uint8_t* buf, int32_t nbytes) {
         return -1;
     }
 
-    pcb_t * getargs_pcb = (pcb_t *) PAGE_8MB-STACK_8KB*(active_proc_num+1);
+    pcb_t * getargs_pcb; 
+    getargs_pcb = (pcb_t *) (PAGE_8MB-STACK_8KB*(active_proc_num+1));
 
     if(nbytes < (uint32_t)strlen((int8_t *)getargs_pcb->arg_buff))
     {
