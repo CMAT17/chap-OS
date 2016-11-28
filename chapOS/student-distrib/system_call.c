@@ -516,7 +516,10 @@ getargs(uint8_t* buf, int32_t nbytes) {
 	return 0;
 }
 
-//worry later
+//vidmap function
+//This function maps user-level video memory to kernel-level video memory
+//Input: screen_start - pointer to the pointer that wants to be mapped
+//Return: The virtual video memory for user level
 int32_t 
 vidmap(uint8_t** screen_start){
   if((uint32_t)screen_start<USER_IMG_START||(uint32_t)screen_start>=USER_IMG_END)
