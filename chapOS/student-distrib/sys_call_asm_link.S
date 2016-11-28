@@ -28,7 +28,7 @@ main_syscall:
 ret_err:
     popal
     leal    -1, %eax       # return -1 for error
-    addl    $4, %esp
+    #addl    $4, %esp
     popfl
     sti
     iret
