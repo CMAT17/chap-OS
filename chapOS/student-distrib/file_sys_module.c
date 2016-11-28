@@ -3,6 +3,7 @@
 #include "lib.h"
 #include "system_call.h"
 
+
 static uint32_t file_sys_start;
 static boot_block_t* boot_block_ptr;
 static uint32_t inode_start;
@@ -85,7 +86,13 @@ int32_t read_dentry_by_index(uint32_t index, dentry_t* dentry)
     }
 
     //fills in dentry with file name, type, and inode number
+    if((int8_t)boot_block_ptr->dir_entries[index].file_name[0]=='\0')
+    {
+        return -1;
+    }
+
     strncpy((int8_t*)dentry->file_name, (int8_t*)boot_block_ptr->dir_entries[index].file_name, FILE_NAME_SIZE);
+
     dentry->file_type = boot_block_ptr->dir_entries[index].file_type;
     dentry->inode_num = boot_block_ptr->dir_entries[index].inode_num;
 
@@ -213,20 +220,21 @@ int32_t dir_write(int32_t fd, const void* buf, int32_t nbytes)
 int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
     dentry_t dir_entry;
-    int32_t i;
+    //int32_t i;
 
     //clear buffer
-    for(i = 0; i<=FILE_NAME_SIZE+1; i++){
+    /*for(i = 0; i<FILE_NAME_SIZE+1; i++){
         ((int8_t*)(buf))[i] = '\0';
-    }
+    }*/
     int32_t test = read_dentry_by_index(directory_index, &dir_entry);
     if(test == 0)
     {
         //dentry can be read by index
-        uint32_t length = strlen((int8_t *) dir_entry.file_name);
-        strncpy((int8_t *)buf, (int8_t *) dir_entry.file_name, length);
+        //uint32_t length = strlen((int8_t *) dir_entry.file_name);
+        //strncpy((int8_t *)buf, (int8_t *) dir_entry.file_name, length);
+        memcpy(buf, (void*)dir_entry.file_name, FILE_NAME_SIZE);
         directory_index++;
-        return length;
+        return FILE_NAME_SIZE;
     }
     else
     {

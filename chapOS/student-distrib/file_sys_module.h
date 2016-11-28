@@ -64,7 +64,7 @@ typedef struct pcb{
     uint8_t parent_proc_num;
     uint32_t parent_ksp;
     uint32_t parent_kbp;
-    int32_t canary;
+    //int32_t canary;
 } pcb_t;
 
 void file_sys_init(module_t* file_sys_module);
