@@ -16,6 +16,7 @@
 #define PDE_USER_PROG         0x20
 #define PDE_8MB_PHY           0x00800000
 #define PDE_12MB_PHY          0x00C00000
+#define MASK_10_BITS          0x3ff
 
 //Video memory location to be map to page table (first page directory)
 #ifndef VIDEO
