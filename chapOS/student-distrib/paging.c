@@ -16,8 +16,8 @@ uint32_t user_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 uint8_t num_process;
 
 int32_t new_userVID_page(void* vir_addr){
-  page_dir[(uint32_t)vir_addr>>22] = ((uint32_t)user_page_table) | 7;
-  user_page_table[((uint32_t)vir_addr>>12)&MASK_10_BITS] = VIDEO | 7;//0x8400007;//0x8400007 | 7;
+  page_dir[(uint32_t)vir_addr>>22] = ((uint32_t)user_page_table) | ENABLE_USER_ENTRY;
+  user_page_table[((uint32_t)vir_addr>>12)&MASK_10_BITS] = VIDEO | ENABLE_USER_ENTRY;//0x8400007;//0x8400007 | 7;
   paging_setCR();
   return 0;
 }
