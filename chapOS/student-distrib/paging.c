@@ -1,5 +1,8 @@
 #include "paging.h"
 
+#define MSB_10_BITS 22
+#define MID_10_BITS 12
+
 //The page directory
 /* This is a Page-Directory Entry (4-KByte Page Table) */
 //See page 90 IA32-ref-manual-vol3 for more info
@@ -21,9 +24,9 @@ uint8_t num_process;
 //Return: always return 0
 int32_t new_userVID_page(void* vir_addr){
   //Set a page directory entry corresponds to the vir_addr to be enabled with user-level accessible
-  page_dir[(uint32_t)vir_addr>>22] = ((uint32_t)user_page_table) | ENABLE_USER_ENTRY;
+  page_dir[(uint32_t)vir_addr>>MSB_10_BITS] = ((uint32_t)user_page_table) | ENABLE_USER_ENTRY;
   //Set a page table entry corresponds to the vir_addr to be enabled with user-level accessible
-  user_page_table[((uint32_t)vir_addr>>12)&MASK_10_BITS] = VIDEO | ENABLE_USER_ENTRY;//0x8400007;//0x8400007 | 7;
+  user_page_table[((uint32_t)vir_addr>>MID_10_BITS)&MASK_10_BITS] = VIDEO | ENABLE_USER_ENTRY;//0x8400007;//0x8400007 | 7;
   paging_setCR();     //Flush TLB
   return 0;
 }
