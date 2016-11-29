@@ -65,13 +65,13 @@ halt(uint8_t status) {
   //tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
   
   //if(active_proc_num==0)
-    asm volatile(
+    /*asm volatile(
                 "movl %%esp, %0   \n"
                 : "=r"(tss.esp0)
-    );
+    );*/
   //else
     //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
-  
+  tss.esp0 = cur_PCB->ksp;
   //printf("%d\n", tss.esp0);
   //sti();
   
@@ -291,13 +291,13 @@ execute(const uint8_t* command) {
   tss.ss0 = KERNEL_DS;
   //printf("%d\n",tss.esp0);
   
-  //if(active_proc_num==0)
+  if(active_proc_num==0)
   asm volatile(
               "movl %%esp, %0   \n"
               : "=r"(tss.esp0)
   );
-  //else
-    //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
+  else
+    tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
   
   //printf("%d\n",tss.esp0);
   //Sandwich added
