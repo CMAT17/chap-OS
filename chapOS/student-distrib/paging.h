@@ -10,8 +10,10 @@
 #define PAGE_ALIGN            4096
 #define HI_PTE_MASK           0xFFFFF000
 #define PD_ENABLE_ENTRY       0x00000003
-#define PD_SET_4MB            0x00000084
-#define NOT_PRESENT           2
+#define MAKE_ENTRY_PRESENT    0x00000001
+#define ENABLE_RW             0x00000002
+#define PD_SET_4MB            0x00000080
+#define ALLOW_USER_LEVEL      0x00000004
 #define INIT_4MB_KERNEL       0x400083
 #define PDE_USER_PROG         0x20
 #define PDE_8MB_PHY           0x00800000

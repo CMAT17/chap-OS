@@ -42,23 +42,30 @@ void initialize_paging(void){
   //Reset the number of process to be 0
   num_process = 0;
   
+  //Clear all table and directory entries
+  for(i=0;i<PAGE_TABLE_SIZE;i++){
+    page_dir[i] = 0;
+    page_table[i] = 0;
+    user_page_table[i] = 0;
+  }
+  
   //Initialize the first page directory to point to the first page table
-  page_dir[0] = ((uint32_t)page_table & HI_PTE_MASK)|PD_ENABLE_ENTRY;
-  page_table[0] = 0;  //Clear the first page_table entry to be 0
+  page_dir[0] = ((uint32_t)page_table & HI_PTE_MASK)|ENABLE_RW|MAKE_ENTRY_PRESENT;//|PD_ENABLE_ENTRY;
+  //page_table[0] = 0;  //Clear the first page_table entry to be 0
   
   //Initialize page directory entries and page table entries before setting their values
-  for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
+  //for(i=1;i<PAGE_DIRECTORY_SIZE;i++){
     //This will clear all bits as shown above, but wants to turn on R/W bit
-    page_dir[i] = NOT_PRESENT;
-    page_table[i] = page_table[i-1]+PAGE_ALIGN;
-  }
+  //  page_dir[i] = ENABLE_RW;
+  //  page_table[i] = page_table[i-1]+PAGE_ALIGN;
+  //}
   
   //Set the R/W of the page table to be 1
-  for(i=0;i<PAGE_DIRECTORY_SIZE;i++){
-    page_table[i] = page_table[i] | NOT_PRESENT; //Enable R/W for page table
-  }
-  
-  page_table[HI_VIDEO] |= PD_ENABLE_ENTRY;//1;     //Set the video memory page table to be present
+  //for(i=0;i<PAGE_DIRECTORY_SIZE;i++){
+    //page_table[i] = page_table[i] | ENABLE_RW; //Enable R/W for page table
+  //}
+  page_table[HI_VIDEO] = VIDEO;
+  page_table[HI_VIDEO] |= MAKE_ENTRY_PRESENT | ENABLE_RW;//|= PD_ENABLE_ENTRY;//3;     //Set the video memory page table to be present
 
   
   //Set the second entry of the page directory to be 4MB for the kernel
@@ -78,12 +85,12 @@ void initialize_paging(void){
 int32_t new4MB_page(void){
   //If there is no program running yet, create a new 4MB page at 8MB phy mem
   if(num_process == 0){
-    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
     num_process = 1;
   }
   //If there is one program running, create a new 4MB page at 12MB phy mem
   else if(num_process == 1){
-    page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+    page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
     num_process = 2;
   }
   //Else do nothing, return -1 (error)
@@ -103,7 +110,7 @@ int32_t new4MB_page(void){
 int32_t rm4MB_page(void){
   //If the program is running at 12MB, then change to 8MB
   if(num_process == 2){
-    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|PD_ENABLE_ENTRY;
+    page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
     num_process = 1;
   }
   //If the program is running at 8MB, then disable the program page
