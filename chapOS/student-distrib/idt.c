@@ -10,6 +10,7 @@
 #define EXCEPTION_NUM     32
 #define KEYBOARD          0x21
 #define RTC               0x28
+#define PIT               0x20
 #define SYSCALL_ENTRY     0x80
 #define EXCEPT_RETVAL     1
 
@@ -112,10 +113,7 @@ void init_idt()
     syscall.present = 0x1;
     
     // Seg Selector
-    interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;
-
-    // set the Offsets for each exception
-    
+    interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;    
 
     for(i = 0; i<NUM_VEC; i++)
     {
@@ -158,7 +156,8 @@ void init_idt()
     }
 
     //Sequentially set all the offsets for each interrupt
-    SET_IDT_ENTRY(idt[KEYBOARD-1], generic_handler);
+    //Set the PIT handler offsets
+    SET_IDT_ENTRY(idt[PIT], pit_handler);
     //Set the keyboard handler offsets
     SET_IDT_ENTRY(idt[KEYBOARD], keyboard_handler);
     
@@ -166,13 +165,13 @@ void init_idt()
         SET_IDT_ENTRY(idt[i], generic_handler);
     }
 
-    //Enable RTC Interrupts
+    //Set the rtc handler offset
     SET_IDT_ENTRY(idt[RTC], rtc_handler);
 
     for(i = RTC+1; i<SYSCALL_ENTRY; i++){
         SET_IDT_ENTRY(idt[i],generic_handler);
     }
-    
+    //Set syscall offset
     SET_IDT_ENTRY(idt[SYSCALL_ENTRY],main_syscall);
 
     for(i = SYSCALL_ENTRY + 1; i<NUM_VEC; i++)

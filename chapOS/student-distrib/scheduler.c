@@ -1,6 +1,6 @@
 #include "scheduler.h"
 #include "i8259.h"
-#include "syscalls.h"
+#include "system_call.h"
 #include "lib.h"
 
 #define FREQ_DIV_PIT    2984
@@ -26,7 +26,7 @@ void pit_irq_sched_handler()
     //disable interrupts while performing
     cli();
 
-    
+
 
     sti();
 }

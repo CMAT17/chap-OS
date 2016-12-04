@@ -350,6 +350,11 @@ open(const uint8_t* filename) {
 
   pcb_pointer = get_pcb_ptr();
 
+  if(filename == NULL)
+  {
+    return -1;
+  }
+
   if(filename[0] == NULL_CHAR)
     {
         return -1;

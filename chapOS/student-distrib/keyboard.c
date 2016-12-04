@@ -109,9 +109,9 @@ close_keyboard(int32_t fd){
 */
 void
 keyboard_int_handler(){
-	cli();
+	//cli();
 	disable_irq(KEYBOARD_IRQ);
-  sti();
+  //sti();
   
 	uint8_t key;
 	while(1)
@@ -167,9 +167,9 @@ keyboard_int_handler(){
 	//send end of interrupt	
 	send_eoi(KEYBOARD_IRQ);
 	
-  cli();
+  //cli();
 	enable_irq(KEYBOARD_IRQ);
-  sti();
+  //sti();
 }
 
 /*

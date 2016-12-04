@@ -57,9 +57,6 @@ typedef struct file_desc{
     uint32_t flags;
 } file_desc_t;
 
-typedef struct term_t{
-
-}
 
 typedef struct pcb{
     file_desc_t f_descs[MAX_OPEN_FILE];
