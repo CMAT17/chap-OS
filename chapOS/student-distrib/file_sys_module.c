@@ -221,7 +221,7 @@ int32_t dir_read(int32_t fd, void* buf, int32_t nbytes)
 {
     dentry_t dir_entry;
     //int32_t i;
-
+    
     //clear buffer
     /*for(i = 0; i<FILE_NAME_SIZE+1; i++){
         ((int8_t*)(buf))[i] = '\0';

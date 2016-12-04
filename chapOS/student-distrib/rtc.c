@@ -43,9 +43,9 @@ void rtc_init(){
     outb(prv_b | PER_INT_EN, RTC_CMOS);
 
     //open the irq line for the RTC
-    cli();
+    //cli();
     enable_irq(RTC_IRQ);
-    sti();
+    //sti();
 }
 
 /*  rtc_irq_handler
@@ -55,9 +55,9 @@ void rtc_init(){
  */
 void rtc_irq_handler(){
   //Mask own irq line to prevent being interrupted by itself
-  cli();
+  //cli();
   disable_irq(RTC_IRQ);
-  sti();
+  //sti();
   
   //Obtain contents of CMOS register C (don't really care about contents)
   outb(INDEX_REG_C,RTC_PORT);
@@ -80,9 +80,9 @@ void rtc_irq_handler(){
   //}
   
   //re-enable irq line
-  cli();
+  //cli();
   enable_irq(RTC_IRQ);
-  sti();
+  //sti();
   
 }
 
@@ -110,9 +110,9 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
  *               nbytes - Number of bytes written
  */
 int32_t rtc_write(int32_t fd, const void* freq, int32_t nbytes){
-  cli();
+  //cli();
   disable_irq(RTC_IRQ);
-  sti();
+  //sti();
   int frequency;
   int rate;
   unsigned char prev_reg_A;
@@ -180,9 +180,9 @@ int32_t rtc_write(int32_t fd, const void* freq, int32_t nbytes){
   outb(((prev_reg_A & HI_4_MASK)| rate), RTC_CMOS);
 
   
-  cli();
+  //cli();
   enable_irq(RTC_IRQ);
-  sti();
+  //sti();
   /* Returns number of bytes written */
   return nbytes;
 }

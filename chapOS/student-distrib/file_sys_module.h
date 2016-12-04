@@ -57,6 +57,10 @@ typedef struct file_desc{
     uint32_t flags;
 } file_desc_t;
 
+typedef struct term_t{
+
+}
+
 typedef struct pcb{
     file_desc_t f_descs[MAX_OPEN_FILE];
     uint8_t arg_buff[MAX_ARG_SIZE];
@@ -67,8 +71,10 @@ typedef struct pcb{
     uint8_t parent_proc_num;
     uint32_t parent_ksp;
     uint32_t parent_kbp;
+    uint8_t active_term_number;
     //int32_t canary;
 } pcb_t;
+
 
 void file_sys_init(module_t* file_sys_module);
 

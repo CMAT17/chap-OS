@@ -4,6 +4,7 @@
 
 .global rtc_handler
 .global keyboard_handler
+.global pit_handler
 
 rtc_handler:
     pushl   %eax
@@ -48,5 +49,16 @@ keyboard_handler:
     popl    %edx
     popl    %ecx
     popl    %eax    
+
+    iret
+
+pit_handler:
+    pushal
+    pushfl
+
+    call pit_irq_sched_handler
+
+    popfl
+    popal
 
     iret

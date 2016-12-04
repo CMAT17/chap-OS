@@ -20,6 +20,7 @@
 #include "types.h"
 #include "file_sys_module.h"
 #include "system_call.h"
+#include "scheduler.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
