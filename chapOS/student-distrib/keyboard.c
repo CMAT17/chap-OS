@@ -28,9 +28,12 @@ term_t terminals[NUM_TERM];
 
 static uint8_t cur_term_id;
 
-int32_t terminal_get_id(){
-  
-  return 0;
+/*
+* Changes variable for the current terminal id
+*/
+void set_cur_term_id(uint8_t new_id){
+  cur_term_id = new_id;
+  return;
 }
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
@@ -88,9 +91,9 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 
 /************************ TERMINAL STUFFS**************************/
 /* init_terminals
-*
-*
-*
+*  INPUTS: None
+*  OUTPUTS: None
+*  SIDE EFFECTS: initialize values to prepare for multiple terminals
 */
 void init_terminals(){
     int i,k;
@@ -102,9 +105,9 @@ void init_terminals(){
         terminals[i].x = terminals[i].y = 0;
         terminals[i].buffer_index = 0;
         terminals[i].is_in_use_flag = 0;
-        terminals[i].term_vid_mem = (uint8_t*)TERM_VIR_VID;
-        //TODO: PAGING CRAP HERE
+        
         mapTermVID(i);
+        terminals[i].term_vid_mem = (uint8_t*)TERM_VIR_ADDR;        
 
         //Set the color of the whole screen for that terminal
         for(k = 0; k < NUM_ROWS*NUM_COLS; k++)
@@ -116,10 +119,7 @@ void init_terminals(){
     //First terminal setup
     buffer_index = terminals[TERMINAL_ID0].buffer_index;
     cur_term_id = TERMINAL_ID0;
-
-    set_coordX(terminals[TERMINAL_ID0].x);
-    set_coordY(terminals[TERMINAL_ID0].y);
-
+    terminal_restore(TERMINAL_ID0);
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[TERMINAL_ID0].term_vid_mem, _4KB);
 
     //terminal_restore(0);
@@ -171,7 +171,7 @@ int32_t terminal_save(uint8_t terminal_id) {
 
     return 0;
 }
-
+/*
 int32_t terminal_switch_term(uint8_t target_terminal_id)
 {
     //Save the previous terminal information and check 
@@ -185,17 +185,10 @@ int32_t terminal_switch_term(uint8_t target_terminal_id)
         return -1;
     }
 
-    int32_t save_complete = terminal_save(cur_term_id);
-    if(save_complete == -1)
-        return -1;
 
-    //Restore the previous terminal information and check 
-    int32_t restore_complete = terminal_restore(target_terminal_id);
-    if(restore_complete == -1)
-        return -1;
 
     return 0;
-}
+}*/
 
 int32_t terminal_launch(uint8_t target_terminal_id)
 {
@@ -229,10 +222,21 @@ int32_t terminal_change(uint8_t target_terminal_id)
 {
     if(target_terminal_id >= NUM_TERM)
     {
+        sti();
         return -1;
     }
-    if(terminal_switch_term(target_terminal_id)==-1)
+    int32_t save_complete = terminal_save(cur_term_id);
+    if(save_complete == -1)
     {
+        sti();
+        return -1;
+    }
+
+    //Restore the previous terminal information and check 
+    int32_t restore_complete = terminal_restore(target_terminal_id);
+    if(restore_complete == -1)
+    {
+        sti();
         return -1;
     }
     cur_term_id = target_terminal_id;
@@ -246,11 +250,13 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
     cli();
     if (target_terminal_id >= NUM_TERM)
     {
+        sti();
         return -1;
     }
 
     if (target_terminal_id == cur_term_id)
     {
+        sti();
         return 0;
     }
 
@@ -302,7 +308,7 @@ void
 keyboard_int_handler(){
 	//cli();
 	disable_irq(KEYBOARD_IRQ);
-  //sti();
+    //sti();
   
 	uint8_t key;
 	while(1)
@@ -742,7 +748,10 @@ keyboard_write(int32_t fd, const void* buff, int32_t nbytes){
   if(i<KEYBOARD_NUM_KEYS-1)
     buffer_key[i] = KEY_NULL;*/
   for(i=0; i<nbytes; i++){
-    putc(*(unsigned char*)(buff+i));
+        if(((uint8_t*)buff)[i] != '\0')
+        {
+            putc(((uint8_t*)buff)[i]);
+        }
   }
   return i;
 }

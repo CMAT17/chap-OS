@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "i8259.h"
 #include "system_call.h"
+#include "keyboard.h"
 #include "lib.h"
 
 void pit_init()
@@ -21,13 +22,20 @@ void pit_irq_sched_handler()
     send_eoi(PIT_IRQ);
     //disable interrupts while performing
     cli();
-   /* pcb_t* cur_PCB;
+    pcb_t* cur_PCB;
     uint32_t next_proc_num;
-    int i;
+    //int i;
 
-    //current process               
-    // (NOT ALWAYS CORRECT bc current proc is no longer highest proc num)
-    cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num + 1));
+    //calculate current process               
+    asm volatile(
+            "movl %%esp, %0   \n"
+            : "=r" (cur_PCB)
+            : //no inputs
+            );
+
+    //cur_PCB = cur_PCB & PCB_MASK;
+
+
 
     //process to be switched to / scheduled
     next_proc_num = (cur_PCB->proc_num + 1) % MAX_PROCESSES;
@@ -54,9 +62,26 @@ void pit_irq_sched_handler()
               );
 
     //switch to next active/running process
-    //cur_term_id = ()
+    cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(next_proc_num + 1));
 
-*/
+    
+    //update the now current process that is running in file system_call.c
+    //so program knows what process to execute other processes from.
+
+
+
+    //update correct terminal id of next process
+    set_cur_term_id(cur_PCB->active_term_number); 
+
+
+
+    //update page table of next process
+    mapUserImgPage(cur_PCB->proc_num);
+
+
+    //tss to point to bottom of next process's kernel stack
+    tss.esp0 = PAGE_8MB-STACK_8KB*(cur_PCB->proc_num)-4;
+
 
 
     sti();
