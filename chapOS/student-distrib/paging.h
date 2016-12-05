@@ -21,6 +21,12 @@
 #define MASK_10_BITS          0x3ff
 #define ENABLE_USER_ENTRY     7
 #define MAX_USER_IMAGE        6
+#define TERM_VIR_ADDR         0x08401000
+#define TERM_PHY_ADDR         0x01C00000
+#define _4KB_PAGEING          4096
+
+#define MSB_10_BITS 22
+#define MID_10_BITS 12
 
 //Video memory location to be map to page table (first page directory)
 #ifndef VIDEO
