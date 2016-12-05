@@ -55,13 +55,14 @@ halt(uint8_t status) {
     cur_PCB->f_descs[i].fops_jmp_tb_ptr = &no_file_ops;
   }
 
+  
   active_proc_num = cur_PCB->parent_proc_num;
   
   //closing involves closing thet keyboard IRQ line, so it must be reenabled
 
   //enable_irq(KEYBOARD_IRQ);
-
-  rm4MB_page();
+  mapUserImgPage(cur_PCB->parent_proc_num);
+  //rm4MB_page();
   //printf("%d\n", tss.esp0);
   //tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
   
@@ -150,7 +151,7 @@ execute(const uint8_t* command) {
   int32_t f_content = 0;
   uint32_t entry_point;
   int32_t new_proc_id;
-  int32_t proc_stat;
+  //int32_t proc_stat;
 
   // The command does not exist
   if( command == NULL )
@@ -240,13 +241,15 @@ execute(const uint8_t* command) {
   entry_point = *((uint32_t *) f_content_buf);
 
   //re-organize virtual memory
-  proc_stat = new4MB_page();
-
-  if(proc_stat == -1)
+  //proc_stat = new4MB_page();
+  
+  new_proc_id = gen_new_proc_id();
+  if(new_proc_id == -1)
   {
     printf("Too many processes\n");
     return -1;
   }
+  mapUserImgPage(new_proc_id);
 
   //Load file into virtual memory
   uint32_t len = get_file_size(f_dentry.inode_num);
@@ -257,7 +260,7 @@ execute(const uint8_t* command) {
   pcb_t * proc_PCB;
   pcb_t * parent_PCB; 
   
-  new_proc_id = gen_new_proc_id();
+  //new_proc_id = gen_new_proc_id();
   
   if(new_proc_id<0)
   {

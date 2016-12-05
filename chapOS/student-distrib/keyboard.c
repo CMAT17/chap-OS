@@ -5,7 +5,7 @@
 #include "keyboard.h"
 #include "lib.h"
 #include "i8259.h"
-#include "system_call."
+#include "system_call.h"
 #include "terminal.h" 
 
 //testing
@@ -97,7 +97,7 @@ void init_terminals(){
         //TODO: PAGING CRAP HERE
     }
 
-    terminal[TERM_0].
+    //terminal[TERM_0].
 
     execute((uint8_t*)"shell");
 }
@@ -208,7 +208,7 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
 
 }
 
-/*
+
 
 /*
 * int32_t open_keyboard()
@@ -297,7 +297,28 @@ keyboard_int_handler(){
 			break;	
 		case ALT_UP:
 			set_alt_flag(ALT_UP);
-			break;					
+			break;	
+    case F1_DOWN:
+      if( alt_flag == 1)
+      {
+        send_eoi(KEYBOARD_IRQ);
+        terminal_LoS(TERMINAL_ID0);
+      }
+      break;
+    case F2_DOWN:
+      if( alt_flag == 1)
+      {
+        send_eoi(KEYBOARD_IRQ);
+        terminal_LoS(TERMINAL_ID1);
+      }
+      break;  
+    case F3_DOWN:
+      if( alt_flag == 1)
+      {
+        send_eoi(KEYBOARD_IRQ);
+        terminal_LoS(TERMINAL_ID2);
+      }
+      break;
 		default:
 			press_other_key(key);
 			break;
@@ -491,6 +512,11 @@ press_other_key(uint8_t key){
         set_coordY(Y_ZERO);
         set_coordX(X_ZERO);
         move_curser();
+      }
+      //Will perform ctrl + c
+      if( (actual_key == 'c') || (actual_key == 'C') )
+      {
+        halt();
       }
       /*
       //for testing Sandwich
