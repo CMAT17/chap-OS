@@ -306,56 +306,56 @@ close_keyboard(int32_t fd){
 */
 void
 keyboard_int_handler(){
-	//cli();
-	disable_irq(KEYBOARD_IRQ);
+  //cli();
+  disable_irq(KEYBOARD_IRQ);
     //sti();
-  
-	uint8_t key;
-	while(1)
-	{
-		if( inb(KEYBOARD_ADDR_PORT) != 0)
-		{
-			//Get a key input from the keyboard buffer
-			key = inb(KEYBOARD_ADDR_PORT);
-			break;
-		}
-	}
 
-	//Perform a certain function depending on the key retrieved
-	switch(key){
-		case CAPS_DOWN:
-			press_caps();
-			break;
-		case ENTER:
-			press_enter();
-			break;	
-		case LEFT_SHIFT_DOWN:
-			press_shift();
-			break;
-		case LEFT_SHIFT_UP:
-			unpress_shift();
-			break;
-		case RIGHT_SHIFT_DOWN:
-			press_shift();
-			break;
-		case RIGHT_SHIFT_UP:
-			unpress_shift();
-			break;
-		case BKSP:
-			press_bskp();
-			break;
-		case CTRL_DOWN:
-			set_ctrl_flag(CTRL_DOWN);
-			break;
-		case CTRL_UP:
-			set_ctrl_flag(CTRL_UP);
-			break;	
-		case ALT_DOWN:
-			set_alt_flag(ALT_DOWN);
-			break;	
-		case ALT_UP:
-			set_alt_flag(ALT_UP);
-			break;	
+  uint8_t key;
+  while(1)
+  {
+    key = inb(KEYBOARD_ADDR_PORT);
+    if(key != 0){
+      //Get a key input from the keyboard buffer
+      //key = inb(KEYBOARD_ADDR_PORT);
+      break;
+    }
+  }
+
+  //Perform a certain function depending on the key retrieved
+  switch(key){
+    case CAPS_DOWN:
+      press_caps();
+      break;
+    case ENTER:
+      press_enter();
+      break;	
+    case LEFT_SHIFT_DOWN:
+      press_shift();
+      break;
+    case LEFT_SHIFT_UP:
+      unpress_shift();
+      break;
+    case RIGHT_SHIFT_DOWN:
+      press_shift();
+      break;
+    case RIGHT_SHIFT_UP:
+      unpress_shift();
+      break;
+    case BKSP:
+      press_bskp();
+      break;
+    case CTRL_DOWN:
+      set_ctrl_flag(CTRL_DOWN);
+      break;
+    case CTRL_UP:
+      set_ctrl_flag(CTRL_UP);
+      break;
+    case ALT_DOWN:
+      set_alt_flag(ALT_DOWN);
+      break;
+    case ALT_UP:
+      set_alt_flag(ALT_UP);
+      break;
     case F1_DOWN:
       if( alt_flag == PRESS_ALT)
       {
@@ -377,16 +377,16 @@ keyboard_int_handler(){
         terminal_LoS(TERMINAL_ID2);
       }
       break;
-		default:
-			press_other_key(key);
-			break;
-	}
-	
-	//send end of interrupt	
-	send_eoi(KEYBOARD_IRQ);
-	
+    default:
+      press_other_key(key);
+      break;
+  }
+
+  //send end of interrupt	
+  send_eoi(KEYBOARD_IRQ);
+
   //cli();
-	enable_irq(KEYBOARD_IRQ);
+  enable_irq(KEYBOARD_IRQ);
   //sti();
 }
 
