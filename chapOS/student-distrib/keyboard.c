@@ -119,7 +119,8 @@ void init_terminals(){
 
     set_coordX(terminals[TERMINAL_ID0].x);
     set_coordY(terminals[TERMINAL_ID0].y);
-
+    terminals[TERMINAL_ID0].is_in_use_flag = ACTIVE;
+    terminals[TERMINAL_ID0].active_flag = ACTIVE;
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[TERMINAL_ID0].term_vid_mem, _4KB);
 
     //terminal_restore(0);
@@ -226,10 +227,12 @@ int32_t terminal_change(uint8_t target_terminal_id)
 {
     if(target_terminal_id >= NUM_TERM)
     {
+        sti();
         return -1;
     }
     if(terminal_switch_term(target_terminal_id)==-1)
     {
+        sti();
         return -1;
     }
     cur_term_id = target_terminal_id;
@@ -243,11 +246,13 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
     cli();
     if (target_terminal_id >= NUM_TERM)
     {
+        sti();
         return -1;
     }
 
     if (target_terminal_id == cur_term_id)
     {
+        sti();
         return 0;
     }
 
