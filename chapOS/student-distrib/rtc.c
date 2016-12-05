@@ -66,7 +66,7 @@ void rtc_irq_handler(){
   // test_interrupts as a check
   //test_interrupts();
 
-  if(is_open == 1)
+  //if(is_open == 1)
     rtc_interrupt_occurred = 1;
   
   //end of interrupt done
@@ -204,7 +204,10 @@ int32_t rtc_open(const uint8_t* filename){
   //cli();
   //enable_irq(RTC_IRQ);
   //sti();
-  is_open = 1;
+  //is_open = 1;
+  int freq = 2;
+  rtc_write(0, &freq, 4);
+  
   return 0;
 }
 
@@ -218,7 +221,9 @@ int32_t rtc_close(int32_t fd){
   //cli();
   //disable_irq(RTC_IRQ);
   //sti();
-  is_open = 0;
+  //is_open = 0;
+  int freq = 2;
+  rtc_write(0, &freq, 4);
   return 0;
 }
 
