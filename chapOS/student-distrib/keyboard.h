@@ -24,7 +24,7 @@
 #define CTRL_DOWN			0x1D
 #define CTRL_UP 			0x9D
 #define ALT_DOWN			0x38
-#define ALT_UP 				0xB8	 
+#define ALT_UP 				0xB8	
 
 #define PRESS_NOTHING		0
 #define	PRESS_SHIFT_ONLY	1
@@ -38,6 +38,7 @@
 
 #define X_ZERO				0
 #define Y_ZERO				0 
+#define	_4KB				0x1000  
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
 int32_t open_keyboard( const uint8_t* filename );

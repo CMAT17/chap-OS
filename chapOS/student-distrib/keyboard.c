@@ -102,6 +102,9 @@ void restore_terminal(uint8_t terminal_id) {
     set_coordX = terminals[terminal_id].x;
     set_coordY = terminals[terminal_id].y;
 
+    //Restore the smallest amount of neccesarily required video memory page
+    memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[terminal_id].term_vid_mem, _4KB);
+
     //Save the index of the terminal
     buffer_index = terminals[terminal_id].buffer_index; 
 }
@@ -114,6 +117,9 @@ void save_terminal(uint8_t terminal_id) {
 
     //Save the index of the terminal
     terminals[terminal_id].buffer_index = buffer_index; 
+
+    //Copy over the smallest amount of neccesarily required video memory page
+    memcpy( (uint8_t *) terminals[terminal_id].term_vid_mem, (uint8_t *)VIDEO, _4KB);
 }
 
 /*
