@@ -313,9 +313,9 @@ keyboard_int_handler(){
   uint8_t key;
   while(1)
   {
+    //Get a key input from the keyboard buffer
     key = inb(KEYBOARD_ADDR_PORT);
     if(key != 0){
-      //Get a key input from the keyboard buffer
       //key = inb(KEYBOARD_ADDR_PORT);
       break;
     }

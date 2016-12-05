@@ -11,8 +11,14 @@
 #define VIDEO 0xB8000
 #define NUM_COLS 80
 #define NUM_ROWS 25
-#define ATTRIB 0x7 
 
+//Color print white
+//#define ATTRIB 0x7  
+
+//Color print white
+#define ATTRIB 0x2 
+
+//
 //My magic numbers
 #define CURSOR_HIGH_ADDR	0x0E 
 #define CURSOR_LOW_ADDR	    0x0F 
