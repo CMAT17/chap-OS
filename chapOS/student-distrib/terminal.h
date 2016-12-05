@@ -31,7 +31,7 @@ int32_t terminal_restore(uint8_t terminal_id);
 
 int32_t terminal_save(uint8_t terminal_id);
 
-int32_t terminal_switch_term(uint8_t target_terminal_id);
+//int32_t terminal_switch_term(uint8_t target_terminal_id);
 
 int32_t terminal_launch(uint8_t target_terminal_id);
 

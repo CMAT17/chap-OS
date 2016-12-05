@@ -24,7 +24,7 @@ void pit_irq_sched_handler()
     cli();
     pcb_t* cur_PCB;
     uint32_t next_proc_num;
-    int i;
+    //int i;
 
     //calculate current process               
     asm volatile(
@@ -33,7 +33,7 @@ void pit_irq_sched_handler()
             : //no inputs
             );
 
-    cur_PCB = cur_PCB & PCB_MASK;
+    //cur_PCB = cur_PCB & PCB_MASK;
 
 
 
