@@ -102,7 +102,7 @@ void init_terminals(){
         terminals[i].x = terminals[i].y = 0;
         terminals[i].buffer_index = 0;
         terminals[i].is_in_use_flag = 0;
-
+        terminals[i].term_vid_mem = (uint8_t*)TERM_VIR_VID;
         //TODO: PAGING CRAP HERE
         mapTermVID(i);
 
@@ -143,6 +143,7 @@ int32_t terminal_restore(uint8_t terminal_id) {
     set_coordY(terminals[terminal_id].y);
 
     //Restore the smallest amount of neccesarily required video memory page
+    mapTermVID(terminal_id);
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[terminal_id].term_vid_mem, _4KB);
 
     //Save the index of the terminal
@@ -165,6 +166,7 @@ int32_t terminal_save(uint8_t terminal_id) {
     terminals[terminal_id].buffer_index = buffer_index; 
 
     //Copy over the smallest amount of neccesarily required video memory page
+    mapTermVID(terminal_id);
     memcpy( (uint8_t *) terminals[terminal_id].term_vid_mem, (uint8_t *)VIDEO, _4KB);
 
     return 0;
@@ -346,21 +348,21 @@ keyboard_int_handler(){
 			set_alt_flag(ALT_UP);
 			break;	
     case F1_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID0);
       }
       break;
     case F2_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID1);
       }
       break;  
     case F3_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID2);

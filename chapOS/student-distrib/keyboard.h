@@ -47,6 +47,7 @@
 #define	TERMINAL_ID1 		1
 #define	TERMINAL_ID2		2 
 #define TERMINAL_ATTRIB		0x02 
+#define TERM_VIR_VID    0x08401000
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
 int32_t open_keyboard( const uint8_t* filename );

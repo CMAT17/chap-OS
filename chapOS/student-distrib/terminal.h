@@ -25,4 +25,20 @@ typedef struct terminal_struct{
     uint8_t is_in_use_flag; //debugging multi terminal uses, checks which terminal is currently being run
 }term_t; 
 
+void init_terminals();
+
+int32_t terminal_restore(uint8_t terminal_id);
+
+int32_t terminal_save(uint8_t terminal_id);
+
+int32_t terminal_switch_term(uint8_t target_terminal_id);
+
+int32_t terminal_launch(uint8_t target_terminal_id);
+
+int32_t terminal_change(uint8_t target_terminal_id);
+
+int32_t terminal_LoS(uint8_t target_terminal_id);
+
+
+
 #endif
