@@ -51,6 +51,11 @@ MP3.4
             -fixed by re-executing shell in halt instead
 
 -Keyboard driver stutters, randomly double types and drops keys
-    -Improved, but still outstanding issue:
+    -Resolved:
         -removed cli()/sti() sandwiches around enable/disable_irq for rtc and keyboard
+        -adjusted inb statement before check if a key was pressed to otherwise only be executed once.
 
+MP3.5
+====================
+-Terminals video memory not mapping correctly
+    -Outstanding Issue

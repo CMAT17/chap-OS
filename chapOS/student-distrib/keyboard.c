@@ -103,7 +103,7 @@ void init_terminals(){
         terminals[i].active_flag = NOT_ACTIVE;
         terminals[i].x = terminals[i].y = 0;
         terminals[i].buffer_index = 0;
-        terminals[i].is_in_use_flag = 0;
+        terminals[i].is_in_use_flag = NOT_ACTIVE;
         
         mapTermVID(i);
         terminals[i].term_vid_mem = (uint8_t*)TERM_VIR_ADDR;        
@@ -118,6 +118,7 @@ void init_terminals(){
     //First terminal setup
     buffer_index = terminals[TERMINAL_ID0].buffer_index;
     cur_term_id = TERMINAL_ID0;
+    terminals[TERMINAL_ID0].is_in_use_flag = ACTIVE;
     terminal_restore(TERMINAL_ID0);
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[TERMINAL_ID0].term_vid_mem, _4KB);
 
@@ -125,10 +126,12 @@ void init_terminals(){
     execute((uint8_t*)"shell");
 }
 
-/* init_terminals
-*
-*
-*
+/* terminal_restore
+* INPUTS: terminal_id - id of terminal that is to have information restored as active terminal
+* OUTPUTS: None
+* RETURN VALUES: 0 - restore was successful
+*                -1 - restore failed due to invalid id
+*   Function restores cursor position, video memory, and buffer index from terminal data structure
 */
 
 int32_t terminal_restore(uint8_t terminal_id) {
@@ -151,6 +154,15 @@ int32_t terminal_restore(uint8_t terminal_id) {
     return 0; 
 }
 
+
+/* terminal_save
+* INPUTS: terminal_id - id of terminal that is to have its information as active terminal saved 
+* OUTPUTS: None
+* RETURN VALUES: 0 - save was successful
+*                -1 - save failed due to invalid id
+*   Function saves cursor position, video memory, and buffer index to terminal data structure
+*/
+
 int32_t terminal_save(uint8_t terminal_id) {
 
     if(terminal_id>= NUM_TERM)
@@ -170,40 +182,33 @@ int32_t terminal_save(uint8_t terminal_id) {
 
     return 0;
 }
-/*
-int32_t terminal_switch_term(uint8_t target_terminal_id)
-{
-    //Save the previous terminal information and check 
-    if(target_terminal_id == cur_term_id)
-    {
-        return 0;
-    }
-    if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
-    {
-        printf("swtich fail");
-        return -1;
-    }
 
 
-
-    return 0;
-}*/
-
+/* terminal_launch
+* INPUT: target_terminal_id - terminal number that is going to launch next shell
+* OUTPUT: NONE
+* RETURN VALUE: 0 - successfully launch new shell for target terminal
+*               -1 - failed to launch new shell
+* Description: function to launch shell for a new terminal
+*/
 int32_t terminal_launch(uint8_t target_terminal_id)
 {
+  //check if the id is the same is current id
   if(target_terminal_id == cur_term_id)
   {
     return 0;
   }
+  //Check to make sure id is within bounds
   if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
   {
     printf("launch fail");
     return -1;
   }
-  
+  //save the current terminal
   int32_t save_complete = terminal_save(cur_term_id);
   if(save_complete == -1)
       return -1;
+  //mark terminal as being the current terminal being run
   terminals[target_terminal_id].is_in_use_flag = ACTIVE;
   cur_term_id = target_terminal_id;
 
@@ -217,6 +222,14 @@ int32_t terminal_launch(uint8_t target_terminal_id)
   return 0;
 }
 
+
+/* terminal_change
+* INPUT: target_terminal_id - terminal number that is going to be switched into
+* OUTPUT: NONE
+* RETURN VALUE: 0 - successfully launch new shell for target terminal
+*               -1 - failed to launch new shell
+* Description: function to switch between shells, and as a result processes
+*/
 int32_t terminal_change(uint8_t target_terminal_id)
 {
     if(target_terminal_id >= NUM_TERM)
@@ -243,22 +256,29 @@ int32_t terminal_change(uint8_t target_terminal_id)
     sti();
   return 0;
 }
-
+/* terminal_LoS
+* INPUT: target_terminal_id - terminal number that is going to be launched/switched into
+* OUTPUT: None
+* RETURN VALUE: 0 - successfully launched new shell for target terminal/ switched into target terminal process
+*               -1 - failed to do aforementioned action
+*     Wrapper function that calls launch if terminal hasn't been launched before, or switch, if desired terminal has been launched already 
+*/
 int32_t terminal_LoS(uint8_t target_terminal_id)
 {
     cli();
+    //Check to make sure id is valid
     if (target_terminal_id >= NUM_TERM)
     {
         sti();
         return -1;
     }
-
+    //check if target id is the same as current terminal id
     if (target_terminal_id == cur_term_id)
     {
         sti();
         return 0;
     }
-
+    //launch or switch, depending if terminal has been launched before
     if (terminals[target_terminal_id].is_in_use_flag == ACTIVE)
         return terminal_change(target_terminal_id);
     else
