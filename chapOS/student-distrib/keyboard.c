@@ -6,6 +6,8 @@
 #include "lib.h"
 #include "i8259.h"
 #include "system_call."
+#include "terminal.h" 
+
 //testing
 #include "rtc.h"
  
@@ -14,7 +16,7 @@ static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
 static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
 static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
-static volatile uint8_t buffer_key*;			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t* buffer_key;			//Buffer that stores all the key pulled up to 128 characters
 static volatile uint8_t buffer_index;						//Index of after buffer's added key
 static volatile uint8_t return_flag;
 
@@ -82,7 +84,7 @@ void init_terminals(){
         terminals[i].term_id = i;
         terminals[i].active_flag = NOT_ACTIVE;
         terminals[i].x = terminals[i].y = 0;
-        terminals[i].return_flag = 0;
+        //terminals[i].return_flag = 0;
         terminals[i].is_in_use_flag = 0;
         clear_buf((void*) (terminals[i].key_buf), KEY_BUF_SIZE);
 
@@ -94,7 +96,25 @@ void init_terminals(){
     execute((uint8_t*)"shell");
 }
 
+void restore_terminal(uint8_t terminal_id) {
 
+    //Restore the x and y cursor
+    set_coordX = terminals[terminal_id].x;
+    set_coordY = terminals[terminal_id].y;
+
+    //Save the index of the terminal
+    buffer_index = terminals[terminal_id].buffer_index; 
+}
+
+void save_terminal(uint8_t terminal_id) {
+
+    //Save the x and y cursor
+    terminals[terminal_id].x = get_coordX();
+    terminals[terminal_id].y = get_coordY();
+
+    //Save the index of the terminal
+    terminals[terminal_id].buffer_index = buffer_index; 
+}
 
 /*
 
