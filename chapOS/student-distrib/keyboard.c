@@ -16,13 +16,21 @@ static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
 static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
 static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
-static volatile uint8_t* buffer_key;			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key0[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key1[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key2[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t* buffKeyPtr[3] = {buffer_key0,buffer_key1,buffer_key2};
 static volatile uint8_t buffer_index;						//Index of after buffer's added key
 static volatile uint8_t return_flag;
 
 term_t terminals[NUM_TERM];
 
 static uint8_t cur_term_id;
+
+int32_t terminal_get_id(){
+  
+  return 0;
+}
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -385,7 +393,8 @@ press_caps(){
 void
 press_enter() {
   //Set key to null to terminate at null for other function anc reset buffer index
-  buffer_key[buffer_index] = KEY_NULL;
+  //buffer_key[buffer_index] = KEY_NULL;
+  buffKeyPtr[0][buffer_index] = KEY_NULL;
   initialize_clear_buffer();
   //Move the cursor to the next line and the screen positions
   putc(NEW_LINE);
@@ -440,7 +449,8 @@ press_bskp() {
     int y;
 
     //Move back to the last key and make it a null key 
-    buffer_key[buffer_index-1] = KEY_NULL;
+    //buffer_key[buffer_index-1] = KEY_NULL;
+    buffKeyPtr[0][buffer_index-1] = KEY_NULL;
     buffer_index = buffer_index - 1;
 
     x = get_coordX();
@@ -500,7 +510,8 @@ press_other_key(uint8_t key){
       if(buffer_index != KEYBOARD_NUM_KEYS)
       {
         //add the key to the buffer
-        buffer_key[buffer_index] = actual_key;
+        //buffer_key[buffer_index] = actual_key;
+        buffKeyPtr[0][buffer_index] = actual_key;
         buffer_index += 1;
         //print a key to the screen
         putc(actual_key);
@@ -661,8 +672,8 @@ keyboard_read(int32_t fd, void* buf, int32_t nbytes){
     if(i>=nbytes)
       return i;
     //Copy the key from buffer to the buff
-    *(unsigned char*)(buf+i) = buffer_key[i];
-    if(buffer_key[i] == KEY_NULL)
+    *(unsigned char*)(buf+i) = buffKeyPtr[0][i];//buffer_key[i];
+    if(buffKeyPtr[0][i] == KEY_NULL)//buffer_key[i] == KEY_NULL)
       return i;
   }
 
