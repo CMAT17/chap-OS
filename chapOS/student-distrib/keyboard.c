@@ -13,15 +13,15 @@
 #include "rtc.h"
  
 // See scancode_array, value correspond to scancode_array's of either (0,1,2,3)
-static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
-static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
-static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
+static uint8_t keyboard_mode = PRESS_NOTHING;     // Initial value is 0.
+static uint8_t ctrl_flag = PRESS_NOTHING;         // Initial value is 0.
+static uint8_t alt_flag = PRESS_NOTHING;          // Initial value is 0.
 
-static volatile uint8_t buffer_key0[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
-static volatile uint8_t buffer_key1[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
-static volatile uint8_t buffer_key2[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key0[KEYBOARD_NUM_KEYS];     //Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key1[KEYBOARD_NUM_KEYS];     //Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key2[KEYBOARD_NUM_KEYS];     //Buffer that stores all the key pulled up to 128 characters
 static volatile uint8_t* buffKeyPtr[3] = {buffer_key0,buffer_key1,buffer_key2};
-static volatile uint8_t buffer_index;						//Index of after buffer's added key
+static volatile uint8_t buffer_index;                       //Index of after buffer's added key
 static volatile uint8_t return_flag;
 static volatile uint8_t cur_exec_term;
 term_t terminals[NUM_TERM];
@@ -38,55 +38,54 @@ void set_cur_term_id(uint8_t new_id){
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
-	
-	// no shift pressed, no caps pressed (0), PRESS_NOTHING
-	{	
-		//Error code, Esc, 1-9, backspace
-		'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0',
-		//tab, q-p, [, ], Enter, Ctrl
-		'\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0',
-		//a-l, ;, ', `, L shift, \, z,
-		'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', '\0', '\\', 'z',
-		// x-m, ,, ., /, R shift, *PrtSc, alt, space, caps, F1
-		'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '0', '*', '\0', ' ', '\0', '\0',
-		//F2-F10, NUM Lock, Scroll Lock, home, up
-		'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
-		//pgup, - , left, center, right, +, end, down, pgdn, ins, del, /, enter, F11
-		'\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
-		//F12, Remaining/repeating undefined keys (>=87)
-		'\0', '\0' 
-	},
-	// shift pressed, no caps pressed (1), PRESS_SHIFT_ONLY
-	{
-		
-		'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0',
-		'\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0', '\0',
-		'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', '\0', '|', 'Z',
-		'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', '0', '*', '\0', ' ', '\0', '\0',
-		'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
-		'\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
-		'\0', '\0' 
-	},
-	// no shift pressed, caps pressed (2), PRESS_CAP_ONLY
-	{
-		'\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0',
-		'\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\0', '\0',
-		'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`', '\0', '\\', 'Z',
-		'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '0', '*', '\0', ' ', '\0', '\0',
-		'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
-		'\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
-		'\0', '\0' 
-	},
-	//  shift pressed, caps pressed (3), PRESS_SHIFT_CAP		
-	{
-		'\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0',
-		'\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\0', '\0',
-		'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '"', '~', '\0', '|', 'z',
-		'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', '0', '*', '\0', ' ', '\0', '\0',
-		'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
-		'\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
-		'\0', '\0' 
-	}
+  // no shift pressed, no caps pressed (0), PRESS_NOTHING
+  {
+    //Error code, Esc, 1-9, backspace
+    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0',
+    //tab, q-p, [, ], Enter, Ctrl
+    '\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\0', '\0',
+    //a-l, ;, ', `, L shift, \, z,
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', '\0', '\\', 'z',
+    // x-m, ,, ., /, R shift, *PrtSc, alt, space, caps, F1
+    'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '0', '*', '\0', ' ', '\0', '\0',
+    //F2-F10, NUM Lock, Scroll Lock, home, up
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
+    //pgup, - , left, center, right, +, end, down, pgdn, ins, del, /, enter, F11
+    '\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
+    //F12, Remaining/repeating undefined keys (>=87)
+    '\0', '\0' 
+  },
+  // shift pressed, no caps pressed (1), PRESS_SHIFT_ONLY
+  {
+    
+    '\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0',
+    '\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\0', '\0',
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', '\0', '|', 'Z',
+    'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', '0', '*', '\0', ' ', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
+    '\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
+    '\0', '\0' 
+  },
+  // no shift pressed, caps pressed (2), PRESS_CAP_ONLY
+  {
+    '\0', '\0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\0',
+    '\0', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\0', '\0',
+    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`', '\0', '\\', 'Z',
+    'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', '0', '*', '\0', ' ', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
+    '\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
+    '\0', '\0' 
+  },
+  //  shift pressed, caps pressed (3), PRESS_SHIFT_CAP		
+  {
+    '\0', '\0', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\0',
+    '\0', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\0', '\0',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '"', '~', '\0', '|', 'z',
+    'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', '0', '*', '\0', ' ', '\0', '\0',
+    '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', 
+    '\0', '-', '\0', '\0', '\0', '+', '\0', '\0', '\0', '\0', '\0', '/', 
+    '\0', '\0' 
+  }
 };
 
 /************************ TERMINAL STUFFS**************************/
