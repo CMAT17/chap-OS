@@ -22,6 +22,8 @@ static volatile uint8_t return_flag;
 
 term_t terminals[NUM_TERM];
 
+static uint8_t cur_term_id;
+
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 	
@@ -76,7 +78,11 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 };
 
 /************************ TERMINAL STUFFS**************************/
-
+/* init_terminals
+*
+*
+*
+*/
 void init_terminals(){
     uint8_t i;
     for( i = 0; i< NUM_TERM; i++)
@@ -96,21 +102,37 @@ void init_terminals(){
     execute((uint8_t*)"shell");
 }
 
-void restore_terminal(uint8_t terminal_id) {
+/* init_terminals
+*
+*
+*
+*/
 
+int32_t terminal_restore(uint8_t terminal_id) {
+
+    if(terminal_id>= NUM_TERM)
+    {
+        return -1;
+    }
     //Restore the x and y cursor
-    set_coordX = terminals[terminal_id].x;
-    set_coordY = terminals[terminal_id].y;
+    set_coordX(terminals[terminal_id].x);
+    set_coordY(terminals[terminal_id].y);
 
     //Restore the smallest amount of neccesarily required video memory page
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[terminal_id].term_vid_mem, _4KB);
 
     //Save the index of the terminal
-    buffer_index = terminals[terminal_id].buffer_index; 
+    buffer_index = terminals[terminal_id].buffer_index;
+
+    return 0; 
 }
 
-void save_terminal(uint8_t terminal_id) {
+int32_t terminal_save(uint8_t terminal_id) {
 
+    if(terminal_id>= NUM_TERM)
+    {
+        return -1;
+    }
     //Save the x and y cursor
     terminals[terminal_id].x = get_coordX();
     terminals[terminal_id].y = get_coordY();
@@ -120,6 +142,70 @@ void save_terminal(uint8_t terminal_id) {
 
     //Copy over the smallest amount of neccesarily required video memory page
     memcpy( (uint8_t *) terminals[terminal_id].term_vid_mem, (uint8_t *)VIDEO, _4KB);
+
+    return 0;
+}
+
+int32_t terminal_switch_term(uint8_t target_terminal_id, uint8_t )
+{
+    //Save the previous terminal information and check 
+    if(target_terminal_id == cur_term_id)
+    {
+        return 0;
+    }
+    if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
+    {
+        printf("swtich fail");
+        return -1;
+    }
+
+    int32_t save_complete = terminal_save(current_terminal_id);
+    if(save_complete == -1)
+        return -1;
+
+    //Restore the previous terminal information and check 
+    int32_t restore_complete = terminal_restore(target_terminal_id);
+    if(restore_complete == -1)
+        return -1;
+
+    return 0;
+}
+
+int32_t terminal_launch(uint8_t target_terminal_id)
+{
+    if(target_terminal_id == cur_term_id)
+    {
+        return 0;
+    }
+    if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
+    {
+        printf("launch fail");
+        return -1;
+    }
+
+
+}
+
+int32_t terminal_change(uint8_t target_terminal_id)
+{
+    if(target_terminal_id >= )
+}
+
+int32_t terminal_LoS(uint8_t target_terminal_id)
+{
+    if (target_terminal_id >= NUM_TERM)
+    {
+        return -1;
+    }
+
+    if (target_terminal_id == cur_term_id)
+    {
+        return 0;
+    }
+
+    if (terminals[target_terminal_id].is_in_use_flag == ACTIVE)
+        return 
+
 }
 
 /*
