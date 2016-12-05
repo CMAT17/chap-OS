@@ -7,6 +7,7 @@
 #include "i8259.h"
 #include "system_call.h"
 #include "terminal.h" 
+#include "paging.h"
 
 //testing
 #include "rtc.h"
@@ -92,7 +93,8 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 *
 */
 void init_terminals(){
-    uint8_t i;
+    int i,k;
+
     for( i = 0; i< NUM_TERM; i++)
     {
         terminals[i].term_id = i;
@@ -103,10 +105,19 @@ void init_terminals(){
         clear_buf((void*) (terminals[i].key_buf), KEY_BUF_SIZE);
 
         //TODO: PAGING CRAP HERE
+        mapTermVID(i);
+
+        //Set the color of the whole screen for that terminal
+        for(k = 0; k < NUM_ROWS*NUM_COLS; k++)
+          *(uint8_t *)(terminals[i].term_vid_mem + (k << 1) + 1) = TERMINAL_ATTRIB;
     }
 
     //terminal[TERM_0].
 
+    //First terminal setup
+    buffer_index = terminals[TERMINAL_ID0].buffer_index;
+    cur_term_id = TERMINAL_ID0;
+    terminal_restore(0);
     execute((uint8_t*)"shell");
 }
 

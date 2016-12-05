@@ -40,6 +40,8 @@ void initialize_paging(void);
 //Set controll registers for paging
 void paging_setCR(void);
 
+int32_t mapTermVID(uint8_t term_id);
+
 //Enable new 4MB page for new program
 //int32_t new4MB_page(void);
 
