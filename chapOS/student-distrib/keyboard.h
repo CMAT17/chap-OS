@@ -23,9 +23,12 @@
 #define BKSP				0x0E
 #define CTRL_DOWN			0x1D
 #define CTRL_UP 			0x9D
+#define F1_DOWN				0x3B
+#define F2_DOWN	 			0x3C
+#define	F3_DOWN  			0x3D 
 #define ALT_DOWN			0x38
-#define ALT_UP 				0xB8	
-
+#define ALT_UP 				0xB8
+ 			 
 #define PRESS_NOTHING		0
 #define	PRESS_SHIFT_ONLY	1
 #define	PRESS_CAP_ONLY		2
@@ -39,6 +42,10 @@
 #define X_ZERO				0
 #define Y_ZERO				0 
 #define	_4KB				0x1000  
+
+#define TERMINAL_ID0		0
+#define	TERMINAL_ID1 		1
+#define	TERMINAL_ID2		2 
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
 int32_t open_keyboard( const uint8_t* filename );
