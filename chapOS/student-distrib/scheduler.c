@@ -3,10 +3,6 @@
 #include "system_call.h"
 #include "lib.h"
 
-#define FREQ_DIV_PIT    2984
-#define LO_8_MASK       0x00FF
-#define HI_8_BITSHIFT   8
-
 void pit_init()
 {
     //set the operation to square wave mode, lo/hi byte access mode
@@ -25,8 +21,63 @@ void pit_irq_sched_handler()
     send_eoi(PIT_IRQ);
     //disable interrupts while performing
     cli();
+   /* pcb_t* cur_PCB;
+    uint32_t next_proc_num;
+    int i;
 
+    //current process               
+    // (NOT ALWAYS CORRECT bc current proc is no longer highest proc num)
+    cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num + 1));
+
+    //process to be switched to / scheduled
+    next_proc_num = (cur_PCB->proc_num + 1) % MAX_PROCESSES;
+
+    //if next process to be switched/scheduled to is not active, find next active
+    while( proc_id_flags[next_proc_num] == 0)
+    {
+        next_proc_num++;
+
+        if(next_proc_num >= MAX_PROCESSES)
+            next_proc_num %= MAX_PROCESSES;
+    }
+
+    //return if there is no other process available to switch to or schedule
+    if(next_proc_num == cur_PCB->proc_num)
+        return;
+
+    //save EBP and ESP of current process before switching
+    asm volatile(
+              "movl   %%ebp, %0   \n"
+              "movl   %%esp, %1   \n"
+              : "=r"(cur_PCB->kbp), "=r"(cur_PCB->ksp) //outputs, ebp stored in cur_pcb->kbp
+              : //no inputs
+              );
+
+    //switch to next active/running process
+    //cur_term_id = ()
+
+*/
 
 
     sti();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
