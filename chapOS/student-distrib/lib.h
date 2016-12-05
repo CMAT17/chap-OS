@@ -179,6 +179,9 @@ void move_screen_up();
 //Will update the cursor on the screen base on the location of the screen.
 void move_curser();
 
+//Clear the buffer by populating with null characters
+void clear_buf(void * buf, int length);
+
 #endif /* _LIB_H */
 
 

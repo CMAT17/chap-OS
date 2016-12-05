@@ -677,6 +677,13 @@ move_curser() {
   outb(location & LBIT_Mask, INDEX_REG_RW_PORT);
 }
 
-
+void clear_buf(void * buf, int length)
+{
+	int i;
+	for (i= 0 ; i< length; i++)
+	{
+		((uint32_t*)buf)[i] = '\0';
+	}
+}
 
 

@@ -5,7 +5,7 @@
 #include "keyboard.h"
 #include "lib.h"
 #include "i8259.h"
-
+#include "system_call."
 //testing
 #include "rtc.h"
  
@@ -14,9 +14,11 @@ static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
 static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
 static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
-volatile uint8_t buffer_key[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
-volatile uint8_t buffer_index = 0;						//Index of after buffer's added key
+static volatile uint8_t buffer_key*;			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_index;						//Index of after buffer's added key
 static volatile uint8_t return_flag;
+
+term_t terminals[NUM_TERM];
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -70,6 +72,31 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 		'\0', '\0' 
 	}
 };
+
+/************************ TERMINAL STUFFS**************************/
+
+void init_terminals(){
+    uint8_t i;
+    for( i = 0; i< NUM_TERM; i++)
+    {
+        terminals[i].term_id = i;
+        terminals[i].active_flag = NOT_ACTIVE;
+        terminals[i].x = terminals[i].y = 0;
+        terminals[i].return_flag = 0;
+        terminals[i].is_in_use_flag = 0;
+        clear_buf((void*) (terminals[i].key_buf), KEY_BUF_SIZE);
+
+        //TODO: PAGING CRAP HERE
+    }
+
+    terminal[TERM_0].
+
+    execute((uint8_t*)"shell");
+}
+
+
+
+/*
 
 /*
 * int32_t open_keyboard()

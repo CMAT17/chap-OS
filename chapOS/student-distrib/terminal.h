@@ -8,9 +8,13 @@
 #define TERM_0          0
 #define TERM_1          1
 #define TERM_2          2
+#define NOT_ACTIVE      0
+#define ACTIVE          1
+#define IS_IN_USE       1
+#define NOT_IN_USE      0
 
 typedef struct terminal_struct{
-    uint8_t key_buffer[KEY_BUF_SIZE];
+    uint8_t key_buf[KEY_BUF_SIZE];
     uint8_t term_id;
     uint8_t cur_proc_num;
     uint8_t active_flag;
