@@ -27,9 +27,12 @@ term_t terminals[NUM_TERM];
 
 static uint8_t cur_term_id;
 
-int32_t terminal_get_id(){
-  
-  return 0;
+/*
+* Changes variable for the current terminal id
+*/
+void set_cur_term_id(uint8_t new_id){
+  cur_term_id = new_id;
+  return;
 }
 
 //The array which maps the scancode to the actual key depending on the mode it is in.

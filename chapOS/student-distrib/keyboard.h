@@ -93,4 +93,7 @@ int32_t keyboard_write(int32_t fd, const void* buff, int32_t nbytes);
 //Afterward no return value.
 int32_t close_keyboard(int32_t fd);
 
+//Function: Change the value of cur_term_id
+void set_cur_term_id(uint8_t new_id);
+
 #endif /* end of _KEYBOARD_H */
