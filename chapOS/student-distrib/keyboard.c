@@ -144,6 +144,8 @@ int32_t terminal_restore(uint8_t terminal_id) {
     set_coordX(terminals[terminal_id].x);
     set_coordY(terminals[terminal_id].y);
 
+    move_curser();
+
     //Restore the smallest amount of neccesarily required video memory page
     mapTermVID(terminal_id);
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[terminal_id].term_vid_mem, _4KB);
