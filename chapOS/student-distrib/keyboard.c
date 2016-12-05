@@ -146,7 +146,7 @@ int32_t terminal_save(uint8_t terminal_id) {
     return 0;
 }
 
-int32_t terminal_switch_term(uint8_t target_terminal_id, uint8_t )
+int32_t terminal_switch_term(uint8_t target_terminal_id)
 {
     //Save the previous terminal information and check 
     if(target_terminal_id == cur_term_id)
@@ -159,7 +159,7 @@ int32_t terminal_switch_term(uint8_t target_terminal_id, uint8_t )
         return -1;
     }
 
-    int32_t save_complete = terminal_save(current_terminal_id);
+    int32_t save_complete = terminal_save(cur_term_id);
     if(save_complete == -1)
         return -1;
 
@@ -183,12 +183,23 @@ int32_t terminal_launch(uint8_t target_terminal_id)
         return -1;
     }
 
+    int32_t save_complete = terminal_save(cur_term_id)
+    if(save_complete == -1)
+        return -1
 
 }
 
 int32_t terminal_change(uint8_t target_terminal_id)
 {
-    if(target_terminal_id >= )
+    if(target_terminal_id >= NUM_TERM)
+    {
+        return -1
+    }
+    if(terminal_switch_term(target_terminal_id)==-1)
+    {
+        return -1
+    }
+    
 }
 
 int32_t terminal_LoS(uint8_t target_terminal_id)
@@ -204,8 +215,9 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
     }
 
     if (terminals[target_terminal_id].is_in_use_flag == ACTIVE)
-        return 
-
+        return terminal_change;
+    else
+        return terminal_launch;
 }
 
 
