@@ -3,12 +3,17 @@
 #include "system_call.h"
 #include "keyboard.h"
 #include "lib.h"
-
+/* pit_init()
+* INPUT: NONE
+* OUTPUT: NONE
+* RETURN VAL: NONE
+*   Function that 1) sets it to square wave generation mode 2) sets the period to 40 ms and 3) enables its IRQ line
+*/
 void pit_init()
 {
     //set the operation to square wave mode, lo/hi byte access mode
     outb(PIT_MODE_3, PIT_CMD_REG_PT);
-    //set the frequency to 40 Hz, low byte -> high byte order
+    //set the period to 40 ms, low byte -> high byte order
     outb(FREQ_DIV_PIT & LO_8_MASK, PIT_CHNL_0);
     outb(FREQ_DIV_PIT >> HI_8_BITSHIFT, PIT_CHNL_0);
 

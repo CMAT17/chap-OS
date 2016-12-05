@@ -59,3 +59,4 @@ MP3.5
 ====================
 -Terminals video memory not mapping correctly
     -Outstanding Issue
+-Terminals process halting does not follow order of execution per terminal

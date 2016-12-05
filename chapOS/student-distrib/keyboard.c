@@ -211,6 +211,7 @@ int32_t terminal_launch(uint8_t target_terminal_id)
   //mark terminal as being the current terminal being run
   terminals[target_terminal_id].is_in_use_flag = ACTIVE;
   cur_term_id = target_terminal_id;
+  terminal_restore(target_terminal_id);
 
   sti();
   //send end of interrupt	

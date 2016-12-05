@@ -14,6 +14,10 @@
 #define SYSCALL_ENTRY     0x80
 #define EXCEPT_RETVAL     1
 
+/***** Generic exception handler*****
+*  Useful for not having to type out the same function over and over again
+*
+*/
 #define EXCEPT_FN(exception_name, msg)  \
 static void exception_name()            \
 {                                       \
@@ -46,6 +50,10 @@ EXCEPT_FN(exception_VE, "Virtualization Exception");
 EXCEPT_FN(exception_SX, "Security Exception");
 //EXCEPT_FN(exception_TF, "Triple Fault");
 
+//Page Fault handler
+/* Requires the address that was attempted access
+*
+*/
 static void exception_PF(){
     uint32_t cr2;
     //obtain linear address 
@@ -64,6 +72,14 @@ static void generic_handler(){
     printf("Interrupt/syscall unkown. pls halp \n");
 }
 
+
+/* init_idt
+* INPUTS: NONE
+* OUTPUTS: NONE
+* RETURN VALUE: NONE
+* DESCRIPTION: initialize the IDT by defining its contents (exceptions, interrupts, syscalls), 
+*              and matching them to their approrpiate spots on the IDT
+*/
 void init_idt()
 {
     int i; 
@@ -115,6 +131,7 @@ void init_idt()
     // Seg Selector
     interrupt.seg_selector = exception.seg_selector = syscall.seg_selector = KERNEL_CS;    
 
+    //Define each IDT entry as either an excpetion, interrupt, or syscall, depending on the element number
     for(i = 0; i<NUM_VEC; i++)
     {
         if(i<EXCEPTION_NUM){

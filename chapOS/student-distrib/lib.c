@@ -676,7 +676,14 @@ move_curser() {
   outb(CURSOR_LOW_ADDR, INDEX_REG_PORT);
   outb(location & LBIT_Mask, INDEX_REG_RW_PORT);
 }
-
+/* void clear_buf(void *buf, int length)
+* INPUTS: buf - buffer to be cleared
+* 	      length - length of the buffer that is to be cleared
+* OUTPUTS: None
+* RETURN VAL: NONE
+* Description: Clear the buffer by populating all elements with null characters
+*
+*/
 void clear_buf(void * buf, int length)
 {
 	int i;
