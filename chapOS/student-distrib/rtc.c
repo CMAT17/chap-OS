@@ -16,7 +16,7 @@
 
 /************ Global variable(s) ************/
 
-static uint8_t is_open = 0;
+//static uint8_t is_open = 0;
 
 /* used for synchronization */
 volatile uint8_t rtc_interrupt_occurred = 0;

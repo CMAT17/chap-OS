@@ -41,6 +41,7 @@ int32_t
 halt(uint8_t status) {
   cli();
   int32_t i;
+  uint32_t prev_active_proc_num = active_proc_num;
   pcb_t * cur_PCB;
 
   cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
@@ -70,28 +71,43 @@ halt(uint8_t status) {
                 : "=r"(tss.esp0)
     );*/
   //else
-    //tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
-  tss.esp0 = cur_PCB->ksp;
+    tss.esp0 = PAGE_8MB-STACK_8KB*(active_proc_num)-4;
+  
+  //current working
+  //tss.esp0 = cur_PCB->ksp;
+  
   //printf("%d\n", tss.esp0);
   //sti();
-  
-  asm volatile(
+  if(prev_active_proc_num==0){
+    /*asm volatile(
                   "cli                        \n"
-                  "xorl   %%eax,%%eax         \n"
-                  "movl   %0, %%eax            \n"
-                  "andl   $0xFF, %%eax        \n"
-                  //"movl   $1, %%eax            \n"
+                  "movl   %0, %%eax           \n"
                   "movl   %1, %%ebp           \n"
                   "movl   %2, %%esp           \n"
-                  "cmpl   $0x00000001,%%eax   \n"
-                  "jne    RETURN_VAL_SET      \n"
-                  "movl   $256,%%eax          \n"
-                  "RETURN_VAL_SET:            \n"
-                  "jmp    RET_FROM_IRET       \n"
                   :
                   : "r"((uint32_t)status), "r"(cur_PCB->kbp), "r"(cur_PCB->ksp)
                   :"cc"
-              );
+              );*/
+    execute((uint8_t*)"shell");
+  }
+  else
+    asm volatile(
+                    "cli                        \n"
+                    "xorl   %%eax,%%eax         \n"
+                    "movl   %0, %%eax            \n"
+                    "andl   $0xFF, %%eax        \n"
+                    //"movl   $1, %%eax            \n"
+                    "movl   %1, %%ebp           \n"
+                    "movl   %2, %%esp           \n"
+                    "cmpl   $0x00000001,%%eax   \n"
+                    "jne    RETURN_VAL_SET      \n"
+                    "movl   $256,%%eax          \n"
+                    "RETURN_VAL_SET:            \n"
+                    "jmp    RET_FROM_IRET       \n"
+                    :
+                    : "r"((uint32_t)status), "r"(cur_PCB->kbp), "r"(cur_PCB->ksp)
+                    :"cc"
+                );
   //printf("test");
   return 0;
 }
@@ -291,12 +307,12 @@ execute(const uint8_t* command) {
   tss.ss0 = KERNEL_DS;
   //printf("%d\n",tss.esp0);
   
-  if(active_proc_num==0)
-  asm volatile(
-              "movl %%esp, %0   \n"
-              : "=r"(tss.esp0)
-  );
-  else
+  /*if(active_proc_num==0)
+    asm volatile(
+                "movl %%esp, %0   \n"
+                : "=r"(tss.esp0)
+    );
+  else*/
     tss.esp0 = PAGE_8MB-STACK_8KB*(new_proc_id)-4;
   
   //printf("%d\n",tss.esp0);
