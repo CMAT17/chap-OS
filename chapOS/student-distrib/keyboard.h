@@ -46,6 +46,8 @@
 #define TERMINAL_ID0		0
 #define	TERMINAL_ID1 		1
 #define	TERMINAL_ID2		2 
+#define TERMINAL_ATTRIB		0x02 
+#define TERM_VIR_VID    0x08401000
 
 //Initialize keyboard with the KEYBOARD_IRQ on the PIC
 int32_t open_keyboard( const uint8_t* filename );
@@ -93,7 +95,11 @@ int32_t keyboard_write(int32_t fd, const void* buff, int32_t nbytes);
 //Afterward no return value.
 int32_t close_keyboard(int32_t fd);
 
+
 //Function: Change the value of cur_term_id
 void set_cur_term_id(uint8_t new_id);
+
+int32_t terminal_restore(uint8_t terminal_id);
+
 
 #endif /* end of _KEYBOARD_H */

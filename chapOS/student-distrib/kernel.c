@@ -21,6 +21,7 @@
 #include "file_sys_module.h"
 #include "system_call.h"
 #include "scheduler.h"
+#include "terminal.h"
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -226,7 +227,8 @@ entry (unsigned long magic, unsigned long addr)
   //char writeArray[50] = "This is written message\n";
   //keyboard_write(0,writeArray,strlen(writeArray));//50);
   //while(1)
-    execute((uint8_t*)"shell");
+  init_terminals();
+    //execute((uint8_t*)"shell");
 //---------------------------End Sandwich testing------------------------------
   //uint8_t testTXT[100] = "     shell       This is Args";
   //execute(testTXT);

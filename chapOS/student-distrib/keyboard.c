@@ -7,6 +7,7 @@
 #include "i8259.h"
 #include "system_call.h"
 #include "terminal.h" 
+#include "paging.h"
 
 //testing
 #include "rtc.h"
@@ -22,7 +23,7 @@ static volatile uint8_t buffer_key2[KEYBOARD_NUM_KEYS];			//Buffer that stores a
 static volatile uint8_t* buffKeyPtr[3] = {buffer_key0,buffer_key1,buffer_key2};
 static volatile uint8_t buffer_index;						//Index of after buffer's added key
 static volatile uint8_t return_flag;
-
+static volatile uint8_t cur_exec_term;
 term_t terminals[NUM_TERM];
 
 static uint8_t cur_term_id;
@@ -95,21 +96,36 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 *
 */
 void init_terminals(){
-    uint8_t i;
+    int i,k;
+
     for( i = 0; i< NUM_TERM; i++)
     {
         terminals[i].term_id = i;
         terminals[i].active_flag = NOT_ACTIVE;
         terminals[i].x = terminals[i].y = 0;
-        //terminals[i].return_flag = 0;
+        terminals[i].buffer_index = 0;
         terminals[i].is_in_use_flag = 0;
-        clear_buf((void*) (terminals[i].key_buf), KEY_BUF_SIZE);
-
+        terminals[i].term_vid_mem = (uint8_t*)TERM_VIR_VID;
         //TODO: PAGING CRAP HERE
+        mapTermVID(i);
+
+        //Set the color of the whole screen for that terminal
+        for(k = 0; k < NUM_ROWS*NUM_COLS; k++)
+          *(uint8_t *)(terminals[i].term_vid_mem + (k << 1) + 1) = TERMINAL_ATTRIB;
     }
 
     //terminal[TERM_0].
 
+    //First terminal setup
+    buffer_index = terminals[TERMINAL_ID0].buffer_index;
+    cur_term_id = TERMINAL_ID0;
+
+    set_coordX(terminals[TERMINAL_ID0].x);
+    set_coordY(terminals[TERMINAL_ID0].y);
+
+    memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[TERMINAL_ID0].term_vid_mem, _4KB);
+
+    //terminal_restore(0);
     execute((uint8_t*)"shell");
 }
 
@@ -130,6 +146,7 @@ int32_t terminal_restore(uint8_t terminal_id) {
     set_coordY(terminals[terminal_id].y);
 
     //Restore the smallest amount of neccesarily required video memory page
+    mapTermVID(terminal_id);
     memcpy( (uint8_t *)VIDEO, (uint8_t *) terminals[terminal_id].term_vid_mem, _4KB);
 
     //Save the index of the terminal
@@ -152,6 +169,7 @@ int32_t terminal_save(uint8_t terminal_id) {
     terminals[terminal_id].buffer_index = buffer_index; 
 
     //Copy over the smallest amount of neccesarily required video memory page
+    mapTermVID(terminal_id);
     memcpy( (uint8_t *) terminals[terminal_id].term_vid_mem, (uint8_t *)VIDEO, _4KB);
 
     return 0;
@@ -184,6 +202,8 @@ int32_t terminal_switch_term(uint8_t target_terminal_id)
 
 int32_t terminal_launch(uint8_t target_terminal_id)
 {
+    
+
     if(target_terminal_id == cur_term_id)
     {
         return 0;
@@ -193,18 +213,37 @@ int32_t terminal_launch(uint8_t target_terminal_id)
         printf("launch fail");
         return -1;
     }
+    
+    int32_t save_complete = terminal_save(cur_term_id);
+    if(save_complete == -1)
+        return -1;
+    terminals[target_terminal_id].is_in_use_flag = ACTIVE;
+    cur_term_id = target_terminal_id;
 
+    sti();
+    execute((uint8_t*)"shell");
     return 0;
 }
 
 int32_t terminal_change(uint8_t target_terminal_id)
 {
-    //if(target_terminal_id >= )
+    if(target_terminal_id >= NUM_TERM)
+    {
+        return -1;
+    }
+    if(terminal_switch_term(target_terminal_id)==-1)
+    {
+        return -1;
+    }
+    cur_term_id = target_terminal_id;
+    mapTermVID(target_terminal_id);
+    sti();
   return 0;
 }
 
 int32_t terminal_LoS(uint8_t target_terminal_id)
 {
+    cli();
     if (target_terminal_id >= NUM_TERM)
     {
         return -1;
@@ -216,12 +255,9 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
     }
 
     if (terminals[target_terminal_id].is_in_use_flag == ACTIVE)
-    {
-
-    }
-        //return 
-
-    return 0;
+        return terminal_change(target_terminal_id);
+    else
+        return terminal_launch(target_terminal_id);
 }
 
 
@@ -315,21 +351,21 @@ keyboard_int_handler(){
 			set_alt_flag(ALT_UP);
 			break;	
     case F1_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID0);
       }
       break;
     case F2_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID1);
       }
       break;  
     case F3_DOWN:
-      if( alt_flag == 1)
+      if( alt_flag == PRESS_ALT)
       {
         send_eoi(KEYBOARD_IRQ);
         terminal_LoS(TERMINAL_ID2);
@@ -397,7 +433,7 @@ void
 press_enter() {
   //Set key to null to terminate at null for other function anc reset buffer index
   //buffer_key[buffer_index] = KEY_NULL;
-  buffKeyPtr[0][buffer_index] = KEY_NULL;
+  buffKeyPtr[cur_term_id][buffer_index] = KEY_NULL;
   initialize_clear_buffer();
   //Move the cursor to the next line and the screen positions
   putc(NEW_LINE);
@@ -453,7 +489,7 @@ press_bskp() {
 
     //Move back to the last key and make it a null key 
     //buffer_key[buffer_index-1] = KEY_NULL;
-    buffKeyPtr[0][buffer_index-1] = KEY_NULL;
+    buffKeyPtr[cur_term_id][buffer_index-1] = KEY_NULL;
     buffer_index = buffer_index - 1;
 
     x = get_coordX();
@@ -514,7 +550,7 @@ press_other_key(uint8_t key){
       {
         //add the key to the buffer
         //buffer_key[buffer_index] = actual_key;
-        buffKeyPtr[0][buffer_index] = actual_key;
+        buffKeyPtr[cur_term_id][buffer_index] = actual_key;
         buffer_index += 1;
         //print a key to the screen
         putc(actual_key);
@@ -675,8 +711,8 @@ keyboard_read(int32_t fd, void* buf, int32_t nbytes){
     if(i>=nbytes)
       return i;
     //Copy the key from buffer to the buff
-    *(unsigned char*)(buf+i) = buffKeyPtr[0][i];//buffer_key[i];
-    if(buffKeyPtr[0][i] == KEY_NULL)//buffer_key[i] == KEY_NULL)
+    *(unsigned char*)(buf+i) = buffKeyPtr[cur_term_id][i];//buffer_key[i];
+    if(buffKeyPtr[cur_term_id][i] == KEY_NULL)//buffer_key[i] == KEY_NULL)
       return i;
   }
 
