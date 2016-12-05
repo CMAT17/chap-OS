@@ -16,7 +16,7 @@ uint32_t page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 
 uint32_t user_page_table[PAGE_TABLE_SIZE] __attribute__((aligned(PAGE_ALIGN)));
 
-uint8_t num_process;
+//uint8_t num_process;
 
 //new_userVID_page function
 //This function create a new 4kB page for video memory in user space
@@ -40,7 +40,7 @@ void initialize_paging(void){
   int i;  //Iterator
   
   //Reset the number of process to be 0
-  num_process = 0;
+  //num_process = 0;
   
   //Clear all table and directory entries
   for(i=0;i<PAGE_TABLE_SIZE;i++){
@@ -82,7 +82,7 @@ void initialize_paging(void){
 //It will map to phys mem at 8MB, 12MB, 16MB, ...
 //Input: none
 //Output: none
-int32_t new4MB_page(void){
+/*int32_t new4MB_page(void){
   //If there is no program running yet, create a new 4MB page at 8MB phy mem
   if(num_process == 0){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
@@ -93,10 +93,29 @@ int32_t new4MB_page(void){
     page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
     num_process = 2;
   }
+  else if(num_process == 2){
+    page_dir[PDE_USER_PROG] = (PDE_8MB_PHY * 2)|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
+    num_process = 3;
+  }
   //Else do nothing, return -1 (error)
   else{
     return -1;
   }
+  //Flush TLB
+  paging_setCR();
+  return 0;
+}*/
+
+//new4MB_page function
+//This function will create a new 4MB page for a new process
+//It will map to phys mem at 8MB, 12MB, 16MB, ...
+//Input: none
+//Output: none
+int32_t mapUserImgPage(int32_t process_id){
+  if(process_id>MAX_USER_IMAGE||process_id<0)
+    return -1;
+  //If there is no program running yet, create a new 4MB page at 8MB phy mem
+  page_dir[PDE_USER_PROG] = ((process_id+2)*PDE_8MB_PHY/2)|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
   //Flush TLB
   paging_setCR();
   return 0;
@@ -107,9 +126,13 @@ int32_t new4MB_page(void){
 //It will map to phys mem at 8MB, 12MB, 16MB, ...
 //Input: none
 //Output: none
-int32_t rm4MB_page(void){
+/*int32_t rm4MB_page(void){
   //If the program is running at 12MB, then change to 8MB
-  if(num_process == 2){
+  if(num_process == 3){
+    page_dir[PDE_USER_PROG] = PDE_12MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
+    num_process = 2;
+  }
+  else if(num_process == 2){
     page_dir[PDE_USER_PROG] = PDE_8MB_PHY|PD_SET_4MB|ALLOW_USER_LEVEL|PD_ENABLE_ENTRY;
     num_process = 1;
   }
@@ -125,7 +148,7 @@ int32_t rm4MB_page(void){
   //Flush CR3
   paging_setCR();
   return 0;
-}
+}*/
 
 //paging_setCR function
 //This function sets control registers to enable aging feature.

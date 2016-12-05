@@ -20,6 +20,7 @@
 #define PDE_12MB_PHY          0x00C00000
 #define MASK_10_BITS          0x3ff
 #define ENABLE_USER_ENTRY     7
+#define MAX_USER_IMAGE        6
 
 //Video memory location to be map to page table (first page directory)
 #ifndef VIDEO
@@ -34,10 +35,12 @@ void initialize_paging(void);
 void paging_setCR(void);
 
 //Enable new 4MB page for new program
-int32_t new4MB_page(void);
+//int32_t new4MB_page(void);
 
 //Tear down 4MB page for the program
-int32_t rm4MB_page(void);
+//int32_t rm4MB_page(void);
+
+int32_t mapUserImgPage(int32_t process_id);
 
 //Create user level video mapping page
 int32_t new_userVID_page(void* vir_addr);

@@ -15,13 +15,14 @@
 
 typedef struct terminal_struct{
     uint8_t key_buf[KEY_BUF_SIZE];
+    uint8_t buffer_index;
     uint8_t term_id;
     uint8_t cur_proc_num;
     uint8_t active_flag;
     uint8_t* term_vid_mem;
     uint8_t x;
     uint8_t y;
-    uint8_t return_flag;
+    //uint8_t return_flag;
     uint8_t is_in_use_flag; //debugging multi terminal uses, checks which terminal is currently being run
 }term_t; 
 
