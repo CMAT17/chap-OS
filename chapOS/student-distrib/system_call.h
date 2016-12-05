@@ -48,7 +48,7 @@
 #define FD_STDIN        0
 #define FD_STDOUT       1
 
-//extern
+extern 	int proc_id_flags[MAX_PROCESSES];
 int32_t halt(uint8_t status);
 int32_t execute(const uint8_t* command);
 int32_t read(int32_t fd, void* buf, int32_t nbytes);

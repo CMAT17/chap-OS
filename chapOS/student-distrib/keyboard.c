@@ -7,6 +7,7 @@
 #include "i8259.h"
 #include "system_call.h"
 #include "terminal.h" 
+#include "paging.h"
 
 //testing
 #include "rtc.h"
@@ -16,13 +17,21 @@ static uint8_t keyboard_mode = PRESS_NOTHING;			// Initial value is 0.
 static uint8_t ctrl_flag = PRESS_NOTHING;				// Initial value is 0.
 static uint8_t alt_flag = PRESS_NOTHING;				// Initial value is 0.
 
-static volatile uint8_t* buffer_key;			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key0[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key1[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t buffer_key2[KEYBOARD_NUM_KEYS];			//Buffer that stores all the key pulled up to 128 characters
+static volatile uint8_t* buffKeyPtr[3] = {buffer_key0,buffer_key1,buffer_key2};
 static volatile uint8_t buffer_index;						//Index of after buffer's added key
 static volatile uint8_t return_flag;
 
 term_t terminals[NUM_TERM];
 
 static uint8_t cur_term_id;
+
+int32_t terminal_get_id(){
+  
+  return 0;
+}
 
 //The array which maps the scancode to the actual key depending on the mode it is in.
 static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
@@ -84,7 +93,8 @@ static uint8_t scancode_array[KEYBOARD_MODE_SIZE][KEYBOARD_NUM_KEYS] = {
 *
 */
 void init_terminals(){
-    uint8_t i;
+    int i,k;
+
     for( i = 0; i< NUM_TERM; i++)
     {
         terminals[i].term_id = i;
@@ -95,10 +105,19 @@ void init_terminals(){
         clear_buf((void*) (terminals[i].key_buf), KEY_BUF_SIZE);
 
         //TODO: PAGING CRAP HERE
+        mapTermVID(i);
+
+        //Set the color of the whole screen for that terminal
+        for(k = 0; k < NUM_ROWS*NUM_COLS; k++)
+          *(uint8_t *)(terminals[i].term_vid_mem + (k << 1) + 1) = TERMINAL_ATTRIB;
     }
 
     //terminal[TERM_0].
 
+    //First terminal setup
+    buffer_index = terminals[TERMINAL_ID0].buffer_index;
+    cur_term_id = TERMINAL_ID0;
+    terminal_restore(0);
     execute((uint8_t*)"shell");
 }
 
@@ -183,14 +202,19 @@ int32_t terminal_launch(uint8_t target_terminal_id)
         return -1;
     }
 
+<<<<<<< HEAD
     int32_t save_complete = terminal_save(cur_term_id)
     if(save_complete == -1)
         return -1
 
+=======
+    return 0;
+>>>>>>> 21c5bc346c296da1a9653990a0e132686278dbcf
 }
 
 int32_t terminal_change(uint8_t target_terminal_id)
 {
+<<<<<<< HEAD
     if(target_terminal_id >= NUM_TERM)
     {
         return -1
@@ -200,6 +224,10 @@ int32_t terminal_change(uint8_t target_terminal_id)
         return -1
     }
     
+=======
+    //if(target_terminal_id >= )
+  return 0;
+>>>>>>> 21c5bc346c296da1a9653990a0e132686278dbcf
 }
 
 int32_t terminal_LoS(uint8_t target_terminal_id)
@@ -215,9 +243,18 @@ int32_t terminal_LoS(uint8_t target_terminal_id)
     }
 
     if (terminals[target_terminal_id].is_in_use_flag == ACTIVE)
+<<<<<<< HEAD
         return terminal_change;
     else
         return terminal_launch;
+=======
+    {
+
+    }
+        //return 
+
+    return 0;
+>>>>>>> 21c5bc346c296da1a9653990a0e132686278dbcf
 }
 
 
@@ -392,7 +429,8 @@ press_caps(){
 void
 press_enter() {
   //Set key to null to terminate at null for other function anc reset buffer index
-  buffer_key[buffer_index] = KEY_NULL;
+  //buffer_key[buffer_index] = KEY_NULL;
+  buffKeyPtr[0][buffer_index] = KEY_NULL;
   initialize_clear_buffer();
   //Move the cursor to the next line and the screen positions
   putc(NEW_LINE);
@@ -447,7 +485,8 @@ press_bskp() {
     int y;
 
     //Move back to the last key and make it a null key 
-    buffer_key[buffer_index-1] = KEY_NULL;
+    //buffer_key[buffer_index-1] = KEY_NULL;
+    buffKeyPtr[0][buffer_index-1] = KEY_NULL;
     buffer_index = buffer_index - 1;
 
     x = get_coordX();
@@ -507,7 +546,8 @@ press_other_key(uint8_t key){
       if(buffer_index != KEYBOARD_NUM_KEYS)
       {
         //add the key to the buffer
-        buffer_key[buffer_index] = actual_key;
+        //buffer_key[buffer_index] = actual_key;
+        buffKeyPtr[0][buffer_index] = actual_key;
         buffer_index += 1;
         //print a key to the screen
         putc(actual_key);
@@ -528,7 +568,7 @@ press_other_key(uint8_t key){
       //Will perform ctrl + c
       if( (actual_key == 'c') || (actual_key == 'C') )
       {
-        halt();
+        halt(0);
       }
       /*
       //for testing Sandwich
@@ -668,8 +708,8 @@ keyboard_read(int32_t fd, void* buf, int32_t nbytes){
     if(i>=nbytes)
       return i;
     //Copy the key from buffer to the buff
-    *(unsigned char*)(buf+i) = buffer_key[i];
-    if(buffer_key[i] == KEY_NULL)
+    *(unsigned char*)(buf+i) = buffKeyPtr[0][i];//buffer_key[i];
+    if(buffKeyPtr[0][i] == KEY_NULL)//buffer_key[i] == KEY_NULL)
       return i;
   }
 

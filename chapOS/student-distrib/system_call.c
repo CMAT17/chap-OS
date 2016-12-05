@@ -8,7 +8,7 @@
 #include "i8259.h"
 
 //Array to keep track of which processes are active
-static int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
+int proc_id_flags[MAX_PROCESSES] = {0,0,0,0,0,0};
 //File operation tables (rtc, file, dir, stdin, stdout, no_file)
 file_ops_jmp_tb_t rtc__ops_tbl = { rtc_open, rtc_read, rtc_write, rtc_close};
 file_ops_jmp_tb_t file_ops_tbl = { file_open, file_read, file_write, file_close};
