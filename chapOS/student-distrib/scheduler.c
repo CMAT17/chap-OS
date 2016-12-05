@@ -20,13 +20,21 @@ void pit_init()
     //enable PIT IRQ Line
     enable_irq(PIT_IRQ);
 }
-
+/* pit_irq_sched_handler
+* INPUT: NONE
+* OUTPUT: NONE
+* RETURN VALUE: NONE
+* Function is "supposed to" implement a round robin scheduler. Supposed to. Currently does nothing.
+*/
 void pit_irq_sched_handler()
 {
     //acknowledge that IRQ is being handled
     send_eoi(PIT_IRQ);
-    //disable interrupts while performing
     cli();
+    //printf("weeeee\n");
+    sti();
+    //disable interrupts while performing
+    /*cli();
     pcb_t* cur_PCB;
     uint32_t next_proc_num;
     //int i;
@@ -89,7 +97,7 @@ void pit_irq_sched_handler()
 
 
 
-    sti();
+    sti();*/
 }
 
 

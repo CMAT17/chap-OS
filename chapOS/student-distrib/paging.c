@@ -29,7 +29,7 @@ int32_t new_userVID_page(void* vir_addr){
 }
 
 int32_t mapTermVID(uint8_t term_id){
-  if(term_id>=3)
+  if(term_id>=NUM_TERM)
     return -1;
   //Set a page directory entry corresponds to the vir_addr to be enabled with user-level accessible
   page_dir[TERM_VIR_ADDR>>MSB_10_BITS] = ((uint32_t)user_page_table) | ENABLE_USER_ENTRY;

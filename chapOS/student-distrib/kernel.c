@@ -170,6 +170,7 @@ entry (unsigned long magic, unsigned long addr)
 	 * PIC, any other initialization stuff... */
 	// Init the RTC
 	rtc_init();
+    pit_init();
 
 	//initialize the keyboard
 	open_keyboard(null_filename);

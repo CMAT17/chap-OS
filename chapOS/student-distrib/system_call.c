@@ -32,6 +32,26 @@ extern uint32_t page_dir[PAGE_DIRECTORY_SIZE] __attribute__((aligned(PAGE_ALIGN)
 	-paging structures
 	-tss, esp0
 */
+
+
+
+/*********************************************************************************
+*                      PROCESS CONTROL BLOCK EXPLANATION                         *
+* The Process control block lies on top of the kernel stack of each process. In  *
+* order to obtain the address of the process control block, one just needs to    *
+* subtract 8KB*(zero-indexed process number + 1) from the 8MB page. The PCB holds*
+* the following information aiding the execution of the process: its kernel stack*
+* and base pointer, the process id number, file descriptors, file names, parent  *
+  process numbers/base pointers/stack pointers, and the terminal associated with
+  said process. Whenever a new program image is executed, a PCB is generated for
+  said process, storing information for the context switch into user space. THe
+  PCB helps to keep track of the status of the process as it is being run.
+
+
+
+
+
+
 /* int32_t halt(uint8_t status)
  * Will terminate the process and close all the files
  * INPUT: status  

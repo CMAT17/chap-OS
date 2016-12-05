@@ -10,5 +10,7 @@
 #define HI_8_BITSHIFT   8
 
 void pit_init();
+void pit_irq_sched_handler();
+
 
 #endif

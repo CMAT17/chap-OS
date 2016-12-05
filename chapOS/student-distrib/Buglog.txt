@@ -62,4 +62,4 @@ MP3.5
 -Terminals process halting does not follow order of execution per terminal
     -Outstanding Issue
 -Scheduler not integrated into OS
-    -
+    -Outstanding Issue, No time to fix
