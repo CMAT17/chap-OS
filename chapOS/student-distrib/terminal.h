@@ -14,7 +14,6 @@
 #define NOT_IN_USE      0
 
 typedef struct terminal_struct{
-    uint8_t key_buf[KEY_BUF_SIZE];
     uint8_t buffer_index;
     uint8_t term_id;
     uint8_t cur_proc_num;

@@ -1,0 +1,56 @@
+MP3.1
+====================
+-Exception handlers are not firing during any intentional faults
+    -Resolved: IDT entries were not setup in the correct order
+
+-Interrupts do not fire
+    -Resolved: enable_irq() had wrong bitshift direction
+
+MP3.2
+====================
+-Filesystem directory read does not work as intended, gives garbage data
+    -Resolved: traversal of data blocks was going out of bounds
+
+-Keyboard should not print buffer unless enter is pressed
+    -Resolved: Changed implementation to function according to TA's spec
+    
+MP3.3
+====================
+-Execute does not function properly, does not properly context switch
+    -Resolved: 
+        -Supervisor bit was improperly set
+        -Entry point was obtained wrong
+
+
+-Execute does not function properly, does not return to previous process correctly
+    -Resolved:
+        -Execute and Halt were obtaining the wrong tss.esp0
+            -grabbing from parent process's esp0 instead of current process's esp0
+        -Execute and Halt were obtaining the wrong PCB address
+            -fixed the math to obtain the correct address
+
+-Halt does not return 256 after exception, causes compiler warning
+    -Resolved: 
+        -order of operands for cmpl in inline assembly was wrong
+        -clobber list was wrong
+
+
+MP3.4
+====================
+-File_read causes buffer overflow
+    -Resolved: 
+        -removed usage of strlen() on non-null-terminated filename
+        -refactored read_data
+
+-Executing "cat rtc" after "fish" does not wait before returning to shell
+    -Resolved: RTC was not reverting frequency back to default, resulting in extremely frequen interrupts
+
+-Executing any command >20 times generates a triple fault
+    -Resolved:
+        - Side effect of implementation of re-execution of shell after exit at process id 0
+            -fixed by re-executing shell in halt instead
+
+-Keyboard driver stutters, randomly double types and drops keys
+    -Improved, but still outstanding issue:
+        -removed cli()/sti() sandwiches around enable/disable_irq for rtc and keyboard
+
