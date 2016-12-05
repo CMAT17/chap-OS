@@ -44,7 +44,8 @@ halt(uint8_t status) {
   uint32_t prev_active_proc_num = active_proc_num;
   pcb_t * cur_PCB;
 
-  cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
+  //cur_PCB = (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
+  cur_PCB = get_pcb_ptr();
   //clear process for use
   proc_id_flags[active_proc_num] = FLAG_INACTIVE;
 
@@ -611,9 +612,7 @@ gen_new_proc_id(void) {
 *	Function: get the pointer to pcb
 */
 pcb_t *
-get_pcb_ptr()
-{
-  /*
+get_pcb_ptr(){
   pcb_t * pcb_ptr;
   asm("andl %%esp, %1 \n"
       "movl %1, %0 \n"
@@ -621,8 +620,8 @@ get_pcb_ptr()
       :"r"(PCB_MASK)
       :"cc"
       );
-  return pcb_ptr;*/
-  return (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
+  return pcb_ptr;
+  //return (pcb_t *)(PAGE_8MB-STACK_8KB*(active_proc_num+1));
 }
 
 /*

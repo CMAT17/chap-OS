@@ -199,27 +199,30 @@ int32_t terminal_switch_term(uint8_t target_terminal_id)
 
 int32_t terminal_launch(uint8_t target_terminal_id)
 {
-    
-
-    if(target_terminal_id == cur_term_id)
-    {
-        return 0;
-    }
-    if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
-    {
-        printf("launch fail");
-        return -1;
-    }
-    
-    int32_t save_complete = terminal_save(cur_term_id);
-    if(save_complete == -1)
-        return -1;
-    terminals[target_terminal_id].is_in_use_flag = ACTIVE;
-    cur_term_id = target_terminal_id;
-
-    sti();
-    execute((uint8_t*)"shell");
+  if(target_terminal_id == cur_term_id)
+  {
     return 0;
+  }
+  if(target_terminal_id >= NUM_TERM || cur_term_id >= NUM_TERM)
+  {
+    printf("launch fail");
+    return -1;
+  }
+  
+  int32_t save_complete = terminal_save(cur_term_id);
+  if(save_complete == -1)
+      return -1;
+  terminals[target_terminal_id].is_in_use_flag = ACTIVE;
+  cur_term_id = target_terminal_id;
+
+  sti();
+  //send end of interrupt	
+	//send_eoi(KEYBOARD_IRQ);
+	
+  //cli();
+	enable_irq(KEYBOARD_IRQ);
+  execute((uint8_t*)"shell");
+  return 0;
 }
 
 int32_t terminal_change(uint8_t target_terminal_id)
@@ -568,6 +571,11 @@ press_other_key(uint8_t key){
       //Will perform ctrl + c
       if( (actual_key == 'c') || (actual_key == 'C') )
       {
+        //send end of interrupt	
+        send_eoi(KEYBOARD_IRQ);
+        
+        //cli();
+        enable_irq(KEYBOARD_IRQ);
         halt(0);
       }
       /*
