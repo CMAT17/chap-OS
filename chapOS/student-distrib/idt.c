@@ -56,7 +56,8 @@ EXCEPT_FN(exception_SX, "Security Exception");
 */
 static void exception_PF(){
     uint32_t cr2;
-    //obtain linear address 
+    //obtain linear address
+    //Control Register 2 holds the address that you are trying to access
     asm("movl %%cr2, %0;"
         : "=r" (cr2)
         :
