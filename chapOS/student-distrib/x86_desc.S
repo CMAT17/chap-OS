@@ -87,7 +87,8 @@ gdt_bottom:
 
 	.align 16
 
-gdt_desc:
+gdt_desc: 
+	#size of the table is first field. address of the table including the first entry is second field
 	.word gdt_bottom - gdt - 1
 	.long gdt
 	
