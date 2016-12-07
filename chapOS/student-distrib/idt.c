@@ -95,7 +95,7 @@ void init_idt()
     exception.reserved4 = 0x0;
     syscall.reserved4 = 0x0;
 
-    // Next LSB determines whether its a trap gate or an interrupt gate
+    // Next LSB determines whether its a trap gate or an interrupt gate. This bit differentiates trap gate and interrupt gate
     interrupt.reserved3 = 0x0;
     exception.reserved3 = 0x1;
     syscall.reserved3 = 0x1;
