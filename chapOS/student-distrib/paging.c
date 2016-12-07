@@ -165,13 +165,13 @@ int32_t mapUserImgPage(int32_t process_id){
 void paging_setCR(void){
   //Set cr3(PDBR) to point to PD, enable paging, Page size extension
   asm("movl %0, %%eax          \n"
-      "movl %%eax, %%cr3       \n"
+      "movl %%eax, %%cr3       \n"        //gives address of page address
       "movl %%cr4, %%eax       \n"
       "orl  $0x00000010, %%eax \n"
-      "movl %%eax, %%cr4       \n"
+      "movl %%eax, %%cr4       \n"        //enable page size extension (allows 4MB pages)
       "movl %%cr0, %%eax       \n"
       "orl  $0x80000000, %%eax \n"
-      "movl %%eax, %%cr0       \n"
+      "movl %%eax, %%cr0       \n"        //Enables protected mode and paging
       :                        // no output
       :"r"(page_dir)           // page_dir as the input
       :"%eax","cc"             // clobbered register
